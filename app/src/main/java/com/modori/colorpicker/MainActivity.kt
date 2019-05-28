@@ -14,16 +14,16 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.modori.colorpicker.Model.RandomImageModel
 import com.modori.colorpicker.RA.ColorAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import retrofit2.Call
+import retrofit2.Response
 import android.graphics.BitmapFactory as BitmapFactory1
 
 
 class MainActivity : AppCompatActivity() {
-
-    //lateinit var compositeDisposable: CompositeDisposable
-    var colorData: ArrayList<Int> = ArrayList()
-    var colorString: ArrayList<String> = ArrayList()
 
     var vibrantSwatch: Palette.Swatch? = null
     var darkMutedSwatch: Palette.Swatch? = null
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     var lightVibrantSwatch: Palette.Swatch? = null
     var mutedSwatch: Palette.Swatch? = null
 
-    private val PICTURE_REQUEST_CODE:Int = 123
+    private val PICTURE_REQUEST_CODE: Int = 123
     private val MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2
 
 
@@ -41,19 +41,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         permissionCheck()
-//        compositeDisposable = CompositeDisposable()
-//
-//
-//        compositeDisposable.add(UnsplashApi.getRandomPhoto()
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribeOn(Schedulers.newThread())
-//            .subscribe({ response: RandomImageModel ->
-//                //받았을 때
-//                Glide.with(this).load(response.urls!!.regular).into(imageview)
-//            }, { error: Throwable ->
-//                Log.d("MainActivity", error.localizedMessage)
-//                Toast.makeText(this, "Error ${error.localizedMessage}", Toast.LENGTH_SHORT).show()
-//            }))
 
         val bitmap: Bitmap = android.graphics.BitmapFactory.decodeResource(resources, R.drawable.sample_image2)
         createPaletteAsync(bitmap)
@@ -72,10 +59,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == PICTURE_REQUEST_CODE){
-            if(resultCode == Activity.RESULT_OK && data != null){
+        if (requestCode == PICTURE_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
                 val data = data.data
-                val uri:Uri = data
+                val uri: Uri = data
 
                 val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
                 createPaletteAsync(bitmap)
@@ -86,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(requestCode == MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE){
+        if (requestCode == MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             } else {
 
@@ -105,56 +92,56 @@ class MainActivity : AppCompatActivity() {
             lightVibrantSwatch = it?.lightVibrantSwatch
             mutedSwatch = it?.mutedSwatch
 
-            colorData = ArrayList()
+            //colorData = ArrayList()
+            val colorSet: MutableSet<Int> = mutableSetOf()
+
 
             if (vibrantSwatch != null) {
-                colorData.add(vibrantSwatch!!.rgb)
-                colorString.add(vibrantSwatch!!.rgb.toString())
+                colorSet.add(vibrantSwatch!!.rgb)
 
 
             }
 
             if (darkMutedSwatch != null) {
-                colorData.add(darkMutedSwatch!!.rgb)
+                colorSet.add(darkMutedSwatch!!.rgb)
 
 
             }
 
             if (darkVibrantSwatch != null) {
-                colorData.add(darkVibrantSwatch!!.rgb)
+                colorSet.add(darkVibrantSwatch!!.rgb)
 
 
             }
 
             if (dominantSwatch != null) {
-                colorData.add(dominantSwatch!!.rgb)
+                colorSet.add(dominantSwatch!!.rgb)
 
             }
 
             if (lightMutedSwatch != null) {
-                colorData.add(lightMutedSwatch!!.rgb)
+                colorSet.add(lightMutedSwatch!!.rgb)
 
             }
             if (lightVibrantSwatch != null) {
-                colorData.add(lightVibrantSwatch!!.rgb)
+                colorSet.add(lightVibrantSwatch!!.rgb)
 
             }
 
             if (mutedSwatch != null) {
-                colorData.add(mutedSwatch!!.rgb)
+                colorSet.add(mutedSwatch!!.rgb)
 
             }
 
-            val adapter = ColorAdapter(colorData, this)
+            val adapter = ColorAdapter(colorSet.toList(), this)
 
 
 
-            Log.d("색류", colorData.toString())
+            Log.d("색류", colorSet.toString())
             colorsRV.layoutManager = LinearLayoutManager(this)
             colorsRV.adapter = adapter
 
             adapter.notifyDataSetChanged()
-
 
 
         }

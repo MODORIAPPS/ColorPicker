@@ -9,6 +9,7 @@
         android:layout_height="80dp">
 
     <TextView
+            android:id="@+id/colorHex"
             android:textStyle="bold"
             android:textColor="#fff"
             android:textSize="22sp"
