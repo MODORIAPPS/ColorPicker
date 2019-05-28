@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 class RandomImageModel {
     @SerializedName("id")
-    val id:Int = 0
+    val id:String = "#3"
 
     @SerializedName("color")
     val color:String = "#6E633A"
