@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:weightSum="10"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         tools:context=".MainActivity">
 
     <LinearLayout
@@ -14,11 +14,12 @@
             android:paddingEnd="15dp"
             android:background="@color/colorPrimary"
             android:id="@+id/utilToolBar"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize">
+            android:orientation="vertical"
+            android:layout_width="60dp"
+            android:layout_height="match_parent">
 
         <ImageView
+                android:layout_marginTop="15dp"
                 android:tint="@android:color/white"
                 android:layout_gravity="center"
                 android:src="@drawable/camera_alt_icon"
@@ -27,10 +28,9 @@
                 android:layout_height="40dp"/>
 
 
-
         <ImageView
+                android:layout_marginTop="15dp"
                 android:tint="@android:color/white"
-                android:layout_marginStart="15dp"
                 android:layout_gravity="center"
                 android:src="@drawable/refresh_icon"
                 android:id="@+id/refreshBtn"
@@ -38,13 +38,13 @@
                 android:layout_height="40dp"/>
 
 
-
     </LinearLayout>
 
     <RelativeLayout
             android:gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="220dp">
+            android:layout_width="270dp"
+            android:layout_height="match_parent">
+
         <com.github.chrisbanes.photoview.PhotoView
                 android:id="@+id/imageview"
                 android:scaleType="centerCrop"

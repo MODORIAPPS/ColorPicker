@@ -43,6 +43,9 @@ class MainActivity : AppCompatActivity() {
     var lightVibrantSwatch: Palette.Swatch? = null
     var mutedSwatch: Palette.Swatch? = null
 
+    var photoId:String = "eee"
+    var retrofit:Retrofit? = null
+
     private val PICTURE_REQUEST_CODE: Int = 123
     private val MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2
 
@@ -50,13 +53,27 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        retrofit = Retrofit.Builder()
+            .baseUrl("https://api.unsplash.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        if(savedInstanceState != null){
+            val mPhotoId:String = savedInstanceState.getString("photoId")
+            getPhotoById(mPhotoId)
+        }else{
+            getRandomPhoto()
+
+        }
+
+
+
         permissionCheck()
-        getRandomPhoto()
 
         refreshBtn.setOnClickListener {
             getRandomPhoto()
         }
-
 
         openGallery.setOnClickListener {
             val getFromGallery = Intent(Intent.ACTION_PICK)
@@ -70,13 +87,66 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun getRandomPhoto() {
-        val retrofit = Retrofit.Builder()
+    private fun getPhotoById(mPhotoId:String){
+
+        Log.d("getPhotoByID", mPhotoId)
+
+        retrofit = Retrofit.Builder()
             .baseUrl("https://api.unsplash.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        val service = retrofit.create(RandomImage::class.java)
+        val service = retrofit!!.create(RandomImage::class.java)
+        val call = service.getPhotoById(mPhotoId)
+
+        call.enqueue(object :Callback<RandomImageModel>{
+            override fun onFailure(call: Call<RandomImageModel>, t: Throwable) {
+                Log.d("IDsearch 실패", t.message)
+            }
+
+            override fun onResponse(call: Call<RandomImageModel>, response: Response<RandomImageModel>) {
+                Log.d("받아온 값", response.body().toString())
+                Glide.with(applicationContext).asBitmap().load(response.body()!!.urls!!.regular)
+                    .listener(object : RequestListener<Bitmap> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Bitmap>?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            return false
+                        }
+
+                        override fun onResourceReady(
+                            resource: Bitmap,
+                            model: Any?,
+                            target: Target<Bitmap>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            setImageView(resource)
+                            photoId = response.body()!!.id
+                            createPaletteAsync(resource)
+                            return true
+                        }
+                    }).into(imageview)
+            }
+        })
+
+    }
+//
+//    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
+//        super.onSaveInstanceState(outState, outPersistentState)
+//        outState!!.putString("photoId", photoId)
+//    }
+
+    private fun getRandomPhoto() {
+        retrofit = Retrofit.Builder()
+            .baseUrl("https://api.unsplash.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit!!.create(RandomImage::class.java)
         val call = service.getRandomPhoto()
         call.enqueue(object : Callback<RandomImageModel> {
             override fun onResponse(call: Call<RandomImageModel>, response: Response<RandomImageModel>) {
@@ -101,11 +171,12 @@ class MainActivity : AppCompatActivity() {
                                 isFirstResource: Boolean
                             ): Boolean {
                                 setImageView(resource)
+                                photoId = response.body()!!.id
+                                Log.d("초기 id", photoId)
                                 createPaletteAsync(resource)
                                 return true
                             }
                         }).into(imageview)
-                    //Glide.with(applicationContext).load(response.body()!!.urls!!.regular).into(imageview)
 
 
                 }
@@ -117,6 +188,15 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        Log.d("photoId", photoId)
+        outState.putString("photoId", photoId)
+
+    }
+
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -225,6 +305,7 @@ class MainActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
 
     }
+
 
     private fun permissionCheck() {
         val ReadpermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
