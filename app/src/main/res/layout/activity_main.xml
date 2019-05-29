@@ -10,6 +10,8 @@
         tools:context=".MainActivity">
 
     <LinearLayout
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
             android:background="#E2E2E2"
             android:id="@+id/utilToolBar"
             android:orientation="horizontal"
@@ -17,17 +19,17 @@
             android:layout_height="?attr/actionBarSize">
 
         <ImageView
+
+                android:layout_gravity="center"
                 android:src="@drawable/camera_alt_icon"
                 android:id="@+id/openGallery"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
+                android:layout_width="40dp"
+                android:layout_height="40dp"/>
+
+
 
         <ImageView
-                android:id="@+id/imageview"
-                android:layout_width="50dp"
-                android:layout_height="50dp"/>
-
-        <ImageView
+                android:layout_marginStart="15dp"
                 android:layout_gravity="center"
                 android:src="@drawable/refresh_icon"
                 android:id="@+id/refreshBtn"
@@ -35,6 +37,17 @@
                 android:layout_height="40dp"/>
 
     </LinearLayout>
+
+    <RelativeLayout
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="220dp">
+        <com.github.chrisbanes.photoview.PhotoView
+                android:id="@+id/imageview"
+                android:scaleType="centerCrop"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+    </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/colorsRV"

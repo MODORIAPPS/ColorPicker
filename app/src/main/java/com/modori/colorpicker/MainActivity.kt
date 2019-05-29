@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -13,15 +12,12 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.Request
 import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
 import com.modori.colorpicker.Api.RandomImage
 import com.modori.colorpicker.Model.RandomImageModel
@@ -60,12 +56,6 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
-
-
-//        val bitmap: Bitmap = android.graphics.BitmapFactory.decodeResource(resources, R.drawable.sample_image2)
-//        createPaletteAsync(bitmap)
-
         openGallery.setOnClickListener {
             val getFromGallery = Intent(Intent.ACTION_PICK)
             getFromGallery.type = "image/*"
@@ -78,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun getRandomPhoto(){
+    private fun getRandomPhoto() {
         val retrofit = Retrofit.Builder()
             .baseUrl("https://api.unsplash.com/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -86,31 +76,33 @@ class MainActivity : AppCompatActivity() {
 
         val service = retrofit.create(RandomImage::class.java)
         val call = service.getRandomPhoto()
-        call.enqueue(object : Callback<RandomImageModel>{
+        call.enqueue(object : Callback<RandomImageModel> {
             override fun onResponse(call: Call<RandomImageModel>, response: Response<RandomImageModel>) {
-                if(response.isSuccessful){
+                if (response.isSuccessful) {
 
-                    Glide.with(applicationContext).asBitmap().load(response.body()!!.urls!!.small).listener(object :RequestListener<Bitmap>{
-                        override fun onLoadFailed(
-                            e: GlideException?,
-                            model: Any?,
-                            target: Target<Bitmap>?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            return false
-                        }
+                    Glide.with(applicationContext).asBitmap().load(response.body()!!.urls!!.regular)
+                        .listener(object : RequestListener<Bitmap> {
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Bitmap>?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                return false
+                            }
 
-                        override fun onResourceReady(
-                            resource: Bitmap,
-                            model: Any?,
-                            target: Target<Bitmap>?,
-                            dataSource: DataSource?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            createPaletteAsync(resource)
-                            return true
-                        }
-                    }).into(imageview)
+                            override fun onResourceReady(
+                                resource: Bitmap,
+                                model: Any?,
+                                target: Target<Bitmap>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                imageview.setImageBitmap(resource)
+                                createPaletteAsync(resource)
+                                return true
+                            }
+                        }).into(imageview)
                     //Glide.with(applicationContext).load(response.body()!!.urls!!.regular).into(imageview)
 
 
@@ -128,10 +120,11 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICTURE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
-                val data = data.data
-                val uri: Uri = data
+                val mDAta = data.data
+                val uri: Uri? = mDAta
 
                 val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+                imageview.setImageBitmap(bitmap)
                 createPaletteAsync(bitmap)
             }
         }
