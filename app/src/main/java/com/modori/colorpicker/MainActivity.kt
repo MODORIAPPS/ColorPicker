@@ -19,6 +19,8 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.daimajia.androidanimations.library.Techniques
+import com.daimajia.androidanimations.library.YoYo
 import com.modori.colorpicker.Api.RandomImage
 import com.modori.colorpicker.Model.RandomImageModel
 import com.modori.colorpicker.RA.ColorAdapter
@@ -98,7 +100,7 @@ class MainActivity : AppCompatActivity() {
                                 dataSource: DataSource?,
                                 isFirstResource: Boolean
                             ): Boolean {
-                                imageview.setImageBitmap(resource)
+                                setImageView(resource)
                                 createPaletteAsync(resource)
                                 return true
                             }
@@ -193,18 +195,35 @@ class MainActivity : AppCompatActivity() {
 
             }
 
-            val adapter = ColorAdapter(colorSet.toList(), this)
+            setRecyclerView(colorSet)
 
 
-
-            Log.d("색류", colorSet.toString())
-            colorsRV.layoutManager = LinearLayoutManager(this)
-            colorsRV.adapter = adapter
-
-            adapter.notifyDataSetChanged()
 
 
         }
+    }
+
+    private fun setImageView(bitmap: Bitmap){
+        YoYo.with(Techniques.FadeIn)
+            .duration(300)
+            .repeat(0)
+            .playOn(imageview)
+        imageview.setImageBitmap(bitmap)
+    }
+
+    private fun setRecyclerView(colorSet:Set<Int>){
+        val adapter = ColorAdapter(colorSet.toList(), this)
+        Log.d("색류", colorSet.toString())
+        colorsRV.layoutManager = LinearLayoutManager(this)
+        colorsRV.adapter = adapter
+
+        YoYo.with(Techniques.FadeIn)
+            .duration(300)
+            .repeat(0)
+            .playOn(colorsRV)
+
+        adapter.notifyDataSetChanged()
+
     }
 
     private fun permissionCheck() {

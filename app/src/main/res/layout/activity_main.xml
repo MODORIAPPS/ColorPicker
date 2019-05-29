@@ -12,14 +12,14 @@
     <LinearLayout
             android:paddingStart="15dp"
             android:paddingEnd="15dp"
-            android:background="#E2E2E2"
+            android:background="@color/colorPrimary"
             android:id="@+id/utilToolBar"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize">
 
         <ImageView
-
+                android:tint="@android:color/white"
                 android:layout_gravity="center"
                 android:src="@drawable/camera_alt_icon"
                 android:id="@+id/openGallery"
@@ -29,6 +29,7 @@
 
 
         <ImageView
+                android:tint="@android:color/white"
                 android:layout_marginStart="15dp"
                 android:layout_gravity="center"
                 android:src="@drawable/refresh_icon"

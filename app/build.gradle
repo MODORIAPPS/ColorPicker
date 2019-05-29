@@ -52,4 +52,7 @@ dependencies {
 
     implementation 'com.github.chrisbanes:PhotoView:2.2.0'
 
+    implementation 'com.daimajia.easing:library:2.0@aar'
+    implementation 'com.daimajia.androidanimations:library:2.3@aar'
+
 }
