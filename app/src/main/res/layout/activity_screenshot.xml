@@ -5,7 +5,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/black"
+        android:background="@android:color/white"
         tools:context=".ScreenshotActivity">
 
     <LinearLayout
@@ -27,6 +27,26 @@
                 android:layout_marginStart="15dp"
                 android:id="@+id/copyBtn"
                 android:src="@drawable/copy_icon"
+                android:tint="@android:color/white"
+                android:layout_width="40dp"
+                android:layout_height="40dp"/>
+
+        <View
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="0dp"/>
+
+        <ImageView
+                android:layout_marginEnd="15dp"
+                android:id="@+id/shareBtn_sc"
+                android:src="@drawable/share_icon"
+                android:tint="@android:color/white"
+                android:layout_width="40dp"
+                android:layout_height="40dp"/>
+
+        <ImageView
+                android:id="@+id/infoBtn"
+                android:src="@drawable/info_icon"
                 android:tint="@android:color/white"
                 android:layout_width="40dp"
                 android:layout_height="40dp"/>

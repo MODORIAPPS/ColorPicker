@@ -79,11 +79,6 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, ScreenshotActivity::class.java)
 
             if(photoId != "eee"){
-//                val stream = ByteArrayOutputStream()
-//                photoBitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
-//                val bytes:ByteArray = stream.toByteArray()
-
-
                 intent.putExtra("photoId", photoId)
                 intent.putExtra("colorList", colorList)
                 startActivity(intent)
@@ -105,6 +100,8 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(Intent.createChooser(getFromGallery, "Select Picture"), PICTURE_REQUEST_CODE)
 
         }
+
+
 
 
     }

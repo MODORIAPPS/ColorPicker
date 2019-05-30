@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -45,9 +46,12 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
 
-class ScreenshotActivity : AppCompatActivity() {
+class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
     var photoBitmap: Bitmap? = null
+    var mColorList:IntArray? = null
+    var stringColors = "33"
+    var photoId:String = "eee"
 
     private val MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2
 
@@ -65,11 +69,13 @@ class ScreenshotActivity : AppCompatActivity() {
         val view6: View = findViewById(R.id.view6)
         val view7: View = findViewById(R.id.view7)
 
+
         val colorViews: Array<View> = arrayOf(view1, view2, view3, view4, view5, view6, view7)
 
         if (intent.hasExtra("photoId")) {
             getPhotoById(intent.getStringExtra("photoId"))
             val colorList: IntArray = intent.getIntArrayExtra("colorList")
+            mColorList = intent.getIntArrayExtra("colorList")
 
             var index: Int = 0
             for (item in colorList) {
@@ -85,35 +91,67 @@ class ScreenshotActivity : AppCompatActivity() {
 
             for (item in colorList) {
                 stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
+
             }
 
-            colorListView.text = stringColor.toString()
+
+            stringColors = stringColor.toString()
+
+            colorListView.text = stringColors
 
 
         }
 
 
-        captureBtn.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("사진을 색깔과 함께 저장합니다.")
-            builder.setMessage("사진은 내장메모리의 ColorPicker 폴더안에 저장됩니다.")
-            builder.setPositiveButton("확인") { _, _ ->
-                val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
-                storeScreenShot(bitmap, intent.getStringExtra("photoId") + "_CAP" + ".jpg")
-
-            }.setNegativeButton("취소") { _, _ -> }
-
-            builder.show()
+        shareBtn_sc.setOnClickListener(this)
+        infoBtn.setOnClickListener(this)
+        copyBtn.setOnClickListener(this)
+        captureBtn.setOnClickListener(this)
 
 
-        }
 
-        copyBtn.setOnClickListener {
-            val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
-            copyToClipBoard(bitmap)
+    }
+
+    override fun onClick(v: View?) {
+
+        if(photoId != "eee"){
+            when(v?.id){
+
+
+                R.id.shareBtn_sc -> {
+                    val intent:Intent = Intent(Intent.ACTION_SEND)
+                    intent.type = "text/plain"
+
+                    intent.putExtra(Intent.EXTRA_TEXT,stringColors)
+
+                    val chooser:Intent = Intent.createChooser(intent,"색 공유하기")
+                    startActivity(chooser)
+                }
+                R.id.infoBtn ->{}
+                R.id.copyBtn -> {
+                    val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
+                    copyToClipBoard(bitmap)
+                }
+                R.id.captureBtn -> {
+                    val builder = AlertDialog.Builder(this)
+                    builder.setTitle("사진을 색깔과 함께 저장합니다.")
+                    builder.setMessage("사진은 내장메모리의 ColorPicker 폴더안에 저장됩니다.")
+                    builder.setPositiveButton("확인") { _, _ ->
+                        val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
+                        storeScreenShot(bitmap, intent.getStringExtra("photoId") + "_CAP" + ".jpg")
+
+                    }.setNegativeButton("취소") { _, _ -> }
+
+                    builder.show()
+                }
+            }
+        }else{
+            Toast.makeText(this,"사진을 받아오고 있습니다.", Toast.LENGTH_SHORT).show()
+
         }
 
     }
+
 
     private fun getPhotoById(mPhotoId: String) {
 
@@ -153,6 +191,7 @@ class ScreenshotActivity : AppCompatActivity() {
                             isFirstResource: Boolean
                         ): Boolean {
                             photoBitmap = resource
+                            photoId = response.body()!!.id
                             imageView_sc.setImageBitmap(resource)
                             return true
                         }

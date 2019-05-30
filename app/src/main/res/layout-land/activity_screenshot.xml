@@ -5,7 +5,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/black"
+        android:background="@android:color/white"
         tools:context=".ScreenshotActivity">
 
     <LinearLayout
@@ -15,6 +15,7 @@
             android:layout_alignParentStart="true"
             android:layout_width="wrap_content"
             android:layout_height="match_parent">
+
         <ImageView
                 android:id="@+id/captureBtn"
                 android:src="@drawable/ic_save_black_24dp"
@@ -31,9 +32,31 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"/>
 
+        <View
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="0dp"/>
+
+        <ImageView
+                android:id="@+id/shareBtn_sc"
+                android:layout_marginTop="15dp"
+                android:src="@drawable/share_icon"
+                android:tint="@android:color/white"
+                android:layout_width="40dp"
+                android:layout_height="40dp"/>
+
+        <ImageView
+                android:id="@+id/infoBtn"
+                android:layout_marginTop="15dp"
+                android:src="@drawable/info_icon"
+                android:tint="@android:color/white"
+                android:layout_width="40dp"
+                android:layout_height="40dp"/>
+
     </LinearLayout>
 
     <LinearLayout
+            android:layout_marginEnd="15dp"
             android:layout_alignParentEnd="true"
             android:background="@android:color/darker_gray"
             android:id="@+id/rootView_sc"
