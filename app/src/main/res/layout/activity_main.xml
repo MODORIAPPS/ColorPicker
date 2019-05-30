@@ -9,16 +9,17 @@
         android:orientation="vertical"
         tools:context=".MainActivity">
 
-    <LinearLayout
+    <RelativeLayout
             android:paddingStart="15dp"
             android:paddingEnd="15dp"
             android:background="@color/colorPrimary"
             android:id="@+id/utilToolBar"
-            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize">
 
         <ImageView
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
                 android:tint="@android:color/white"
                 android:layout_gravity="center"
                 android:src="@drawable/camera_alt_icon"
@@ -27,24 +28,36 @@
                 android:layout_height="40dp"/>
 
 
-
         <ImageView
-                android:tint="@android:color/white"
                 android:layout_marginStart="15dp"
+                android:layout_toEndOf="@id/openGallery"
+                android:layout_centerVertical="true"
+                android:tint="@android:color/white"
                 android:layout_gravity="center"
                 android:src="@drawable/refresh_icon"
                 android:id="@+id/refreshBtn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"/>
 
+        <ImageView
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:tint="@android:color/white"
+                android:layout_marginStart="15dp"
+                android:layout_gravity="center"
+                android:src="@drawable/share_icon"
+                android:id="@+id/shareBtn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"/>
 
 
-    </LinearLayout>
+    </RelativeLayout>
 
     <RelativeLayout
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="220dp">
+
         <com.github.chrisbanes.photoview.PhotoView
                 android:id="@+id/imageview"
                 android:scaleType="centerCrop"

@@ -10,8 +10,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -30,6 +32,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.ByteArrayOutputStream
 import android.graphics.BitmapFactory as BitmapFactory1
 
 
@@ -44,10 +47,12 @@ class MainActivity : AppCompatActivity() {
     var mutedSwatch: Palette.Swatch? = null
 
     var photoId:String = "eee"
+    var photoBitmap:Bitmap? = null
+    var colorList:IntArray? = null
     var retrofit:Retrofit? = null
 
+
     private val PICTURE_REQUEST_CODE: Int = 123
-    private val MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +74,24 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        permissionCheck()
+
+        shareBtn.setOnClickListener {
+            val intent = Intent(this, ScreenshotActivity::class.java)
+
+            if(photoId != "eee"){
+//                val stream = ByteArrayOutputStream()
+//                photoBitmap!!.compress(Bitmap.CompressFormat.PNG, 100, stream)
+//                val bytes:ByteArray = stream.toByteArray()
+
+
+                intent.putExtra("photoId", photoId)
+                intent.putExtra("colorList", colorList)
+                startActivity(intent)
+
+            }else{
+                Toast.makeText(this,"사진을 받아오고 있습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         refreshBtn.setOnClickListener {
             getRandomPhoto()
@@ -125,6 +147,7 @@ class MainActivity : AppCompatActivity() {
                             isFirstResource: Boolean
                         ): Boolean {
                             setImageView(resource)
+                            photoBitmap = resource
                             photoId = response.body()!!.id
                             createPaletteAsync(resource)
                             return true
@@ -134,11 +157,6 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
-//
-//    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
-//        super.onSaveInstanceState(outState, outPersistentState)
-//        outState!!.putString("photoId", photoId)
-//    }
 
     private fun getRandomPhoto() {
         retrofit = Retrofit.Builder()
@@ -172,6 +190,7 @@ class MainActivity : AppCompatActivity() {
                             ): Boolean {
                                 setImageView(resource)
                                 photoId = response.body()!!.id
+                                photoBitmap = resource
                                 Log.d("초기 id", photoId)
                                 createPaletteAsync(resource)
                                 return true
@@ -213,15 +232,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            } else {
-
-            }
-        }
-    }
 
     private fun createPaletteAsync(bitmap: Bitmap) {
         Palette.from(bitmap).generate {
@@ -293,9 +303,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun setRecyclerView(colorSet:Set<Int>){
         val adapter = ColorAdapter(colorSet.toList(), this)
+        colorList = colorSet.toIntArray()
         Log.d("색류", colorSet.toString())
         colorsRV.layoutManager = LinearLayoutManager(this)
         colorsRV.adapter = adapter
+
 
         YoYo.with(Techniques.FadeIn)
             .duration(300)
@@ -307,18 +319,5 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun permissionCheck() {
-        val ReadpermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if (ReadpermissionCheck == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE
-            )
 
-        } else {
-
-        }
-
-    }
 }
