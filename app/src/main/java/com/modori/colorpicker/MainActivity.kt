@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.get
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -27,6 +28,7 @@ import com.modori.colorpicker.Api.RandomImage
 import com.modori.colorpicker.Model.RandomImageModel
 import com.modori.colorpicker.RA.ColorAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_screenshot.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -71,9 +73,6 @@ class MainActivity : AppCompatActivity() {
             getRandomPhoto()
 
         }
-
-
-
 
         shareBtn.setOnClickListener {
             val intent = Intent(this, ScreenshotActivity::class.java)
@@ -125,6 +124,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call<RandomImageModel>, response: Response<RandomImageModel>) {
                 Log.d("받아온 값", response.body().toString())
+                photoId = response.body()!!.id
                 Glide.with(applicationContext).asBitmap().load(response.body()!!.urls!!.regular)
                     .listener(object : RequestListener<Bitmap> {
                         override fun onLoadFailed(
@@ -143,9 +143,9 @@ class MainActivity : AppCompatActivity() {
                             dataSource: DataSource?,
                             isFirstResource: Boolean
                         ): Boolean {
+
                             setImageView(resource)
                             photoBitmap = resource
-                            photoId = response.body()!!.id
                             createPaletteAsync(resource)
                             return true
                         }
@@ -287,6 +287,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
+
         }
     }
 
@@ -305,6 +306,7 @@ class MainActivity : AppCompatActivity() {
         colorsRV.layoutManager = LinearLayoutManager(this)
         colorsRV.adapter = adapter
 
+        utilToolBar.setBackgroundColor(colorList!![0])
 
         YoYo.with(Techniques.FadeIn)
             .duration(300)

@@ -4,12 +4,16 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.graphics.blue
+import androidx.core.graphics.green
+import androidx.core.graphics.red
 import androidx.recyclerview.widget.RecyclerView
 import com.modori.colorpicker.R
 import kotlinx.android.synthetic.main.color_items_vertical.view.*
@@ -34,6 +38,9 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
         holder.colorPanel.setOnClickListener {
             setClipBoardLink(context, hexColor)
         }
+        val color:Int = Color.parseColor(hexColor)
+        Log.d("RED", color.red.toString())
+        holder.colorRGB.text = "RGB( ${color.red} , ${color.green} , ${color.blue} )"
 
 
 
@@ -46,6 +53,7 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val colorPanel: View = view.findViewById(R.id.colorPanel) as View
         val colorHex: TextView = view.findViewById(R.id.colorHex) as TextView
+        val colorRGB:TextView = view.findViewById(R.id.colorRGB) as TextView
     }
 
     private fun setClipBoardLink(context: Context, link:String){
@@ -54,5 +62,8 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
         clipboardManager.primaryClip = clipData
         Toast.makeText(context,"클립보드에 복사되었습니다.", Toast.LENGTH_SHORT).show()
     }
+
+
+
 }
 

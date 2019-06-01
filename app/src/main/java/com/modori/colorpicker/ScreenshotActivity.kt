@@ -1,13 +1,11 @@
 package com.modori.colorpicker
 
 import android.Manifest
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -22,6 +20,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.blue
+import androidx.core.graphics.green
+import androidx.core.graphics.red
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.palette.graphics.Palette
@@ -36,6 +37,7 @@ import com.modori.colorpicker.Model.RandomImageModel
 import com.modori.colorpicker.Utils.Screenshot
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_screenshot.*
+import kotlinx.android.synthetic.main.color_items_vertical.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -50,6 +52,7 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
     var photoBitmap: Bitmap? = null
     var mColorList:IntArray? = null
+    var rgbList:ArrayList<String>? = ArrayList()
     var stringColors = "33"
     var photoId:String = "eee"
 
@@ -93,11 +96,18 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
                 stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
 
             }
+            toolBar.setBackgroundColor(colorList[0])
 
 
             stringColors = stringColor.toString()
 
+            for (item in stringColor){
+                val color:Int = Color.parseColor(item)
+                rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
+            }
+
             colorListView.text = stringColors
+            colorRGBView.text = rgbList.toString()
 
 
         }
@@ -200,6 +210,23 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
         })
 
     }
+
+//    private fun shareImage(bitmap: Bitmap){
+//        try{
+//            val intent:Intent = Intent(Intent.ACTION_SEND)
+//            intent.type = "image/*"
+//            intent.putExtra(Intent.EXTRA_STREAM, getImageUri(bitmap))
+//            intent.setPackage("com.kakao.talk")
+//            startActivityForResult(intent,REQUEST_IMG_SEND)
+//        }catch (e:ActivityNotFoundException){
+//            val  uriMarket:Uri = Uri.parse("market://deatils?id=com.kakao.talk")
+//            val intent = Intent(Intent.ACTION_VIEW, uriMarket)
+//            startActivity(intent)
+//        }
+//
+//
+//
+//    }
 
     private fun permissionCheck() {
         val ReadpermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
