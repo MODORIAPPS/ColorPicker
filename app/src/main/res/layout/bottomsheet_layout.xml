@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#D0FFFFFF"
+
+              android:orientation="vertical"
+              android:padding="10dp">
+
+    <!-- 10 + 7 -->
+    <ImageView
+            android:layout_width="200dp"
+            android:layout_height="7dp"
+            android:layout_gravity="center"
+            android:src="@drawable/bottombar" />
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Tool Box"
+                android:textColor="#353535"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="훈장등의 영전은 이를 받은 자에게만 효력이 있고, 어떠한 특권도 이에 따르지 아니한다. 연소자의 근로는 특별한 보호를 받는다. 법원은 최고법원인 대법원과 각급법원으로 조직된다.
+의원을 제명하려면 국회재적의원 3분의 2 이상의 찬성이 있어야 한다. 국회의 정기회는 법률이 정하는 바에 의하여 매년 1회 집회되며, 국회의 임시회는 대통령 또는 국회재적의원 4분의 1 이상의 요구에 의하여 집회된다." />
+    </LinearLayout>
+
+
+</LinearLayout>

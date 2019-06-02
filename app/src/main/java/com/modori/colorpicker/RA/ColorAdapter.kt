@@ -29,18 +29,24 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        Log.d("받아온 색", colorList[position].toString())
-        holder.colorPanel.setBackgroundColor(colorList[position])
 
         val hexColor:String = String.format("#%06X", (0xFFFFFF and colorList[position]))
-        holder.colorHex.text = hexColor
-
-        holder.colorPanel.setOnClickListener {
-            setClipBoardLink(context, hexColor)
-        }
         val color:Int = Color.parseColor(hexColor)
         Log.d("RED", color.red.toString())
-        holder.colorRGB.text = "RGB( ${color.red} , ${color.green} , ${color.blue} )"
+        Log.d("받아온 색", colorList[position].toString())
+        val strRGB:String = "RGB( ${color.red} , ${color.green} , ${color.blue} )"
+
+        holder.colorHex.text = hexColor
+        holder.colorPanel.setBackgroundColor(colorList[position])
+        holder.colorPanel.setOnClickListener {
+            Toast.makeText(context,"길게 눌러 복사합니다.", Toast.LENGTH_SHORT).show()
+        }
+        holder.colorPanel.setOnLongClickListener {
+            return@setOnLongClickListener setClipBoardLink(context, "HEX : $hexColor, $strRGB")
+
+        }
+
+        holder.colorRGB.text = strRGB
 
 
 
@@ -56,11 +62,13 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
         val colorRGB:TextView = view.findViewById(R.id.colorRGB) as TextView
     }
 
-    private fun setClipBoardLink(context: Context, link:String){
+    private fun setClipBoardLink(context: Context, link:String):Boolean{
         val clipboardManager:ClipboardManager = context.getSystemService(Activity.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData:ClipData = ClipData.newPlainText("label", link)
         clipboardManager.primaryClip = clipData
-        Toast.makeText(context,"클립보드에 복사되었습니다.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context,link + "를 클립보드에 복사하였습니다.", Toast.LENGTH_SHORT).show()
+
+        return true
     }
 
 

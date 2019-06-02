@@ -75,7 +75,7 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
         val colorViews: Array<View> = arrayOf(view1, view2, view3, view4, view5, view6, view7)
 
-        if (intent.hasExtra("photoId")) {
+        if (intent.getStringExtra("photoId") != "eee") {
             getPhotoById(intent.getStringExtra("photoId"))
             val colorList: IntArray = intent.getIntArrayExtra("colorList")
             mColorList = intent.getIntArrayExtra("colorList")
@@ -111,6 +111,51 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
 
         }
+        else if(intent.getParcelableExtra<Uri>("imageUri") != null){
+            val uri:Uri = intent.getParcelableExtra("imageUri") as Uri
+            imageView_sc.setImageURI(uri)
+
+            //val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+            //imageView_sc.setImageBitmap(bitmap)
+
+            val colorList: IntArray = intent.getIntArrayExtra("colorList")
+            mColorList = intent.getIntArrayExtra("colorList")
+
+            var index: Int = 0
+            for (item in colorList) {
+                colorViews[index].setBackgroundColor(item)
+                index++
+            }
+
+            for (i in index until colorViews.size) {
+                colorViews[i].visibility = View.GONE
+            }
+
+            val stringColor: ArrayList<String> = arrayListOf()
+
+            for (item in colorList) {
+                stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
+
+            }
+            toolBar.setBackgroundColor(colorList[0])
+
+
+            stringColors = stringColor.toString()
+
+            for (item in stringColor){
+                val color:Int = Color.parseColor(item)
+                rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
+            }
+
+            colorListView.text = stringColors
+            colorRGBView.text = rgbList.toString()
+
+
+
+        }else{
+            Toast.makeText(this, "잘못된 접근입니다.", Toast.LENGTH_LONG).show()
+            finish()
+        }
 
 
         shareBtn_sc.setOnClickListener(this)
@@ -129,7 +174,7 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
 
                 R.id.shareBtn_sc -> {
-                    val intent:Intent = Intent(Intent.ACTION_SEND)
+                    val intent = Intent(Intent.ACTION_SEND)
                     intent.type = "text/plain"
 
                     intent.putExtra(Intent.EXTRA_TEXT,stringColors)
@@ -267,6 +312,8 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
         out.close()
         Toast.makeText(this, "스크린 샷을 저장했습니다.", Toast.LENGTH_SHORT).show()
+
+        this.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, getImageUri(bitmap)))
 
     }
 

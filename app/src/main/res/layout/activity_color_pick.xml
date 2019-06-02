@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:fitsSystemWindows="true"
+        tools:context=".ColorPickActivity">
+
+
+    <LinearLayout
+            android:id="@+id/toolBar_pick"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <RelativeLayout
+                android:background="@color/colorPrimary"
+                android:paddingStart="15dp"
+                android:paddingEnd="15dp"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize">
+
+            <ImageView
+                    android:id="@+id/backBtn"
+                    android:src="@drawable/arrow_back_icon"
+                    android:tint="@android:color/white"
+                    android:layout_width="32dp"
+                    android:layout_height="match_parent"/>
+
+            <TextView
+                    android:layout_marginStart="15dp"
+                    android:text="색상 선택기"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:layout_centerVertical="true"
+                    android:layout_toEndOf="@+id/backBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <ImageView
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerInParent="true"
+                    android:id="@+id/openGallery_p"
+                    android:tint="@android:color/white"
+                    android:src="@drawable/camera_alt_icon"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"/>
+        </RelativeLayout>
+
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <RelativeLayout
+                    android:background="@color/colorPrimary"
+                    android:padding="15dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="90dp"
+                    android:id="@+id/relativeLayout2">
+
+                <View
+                        android:layout_alignParentStart="true"
+                        android:background="@android:color/white"
+                        android:id="@+id/colorBlock"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        />
+
+                <TextView
+                        android:textSize="18sp"
+                        android:layout_toEndOf="@id/colorBlock"
+                        android:layout_alignParentBottom="true"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:text="HEX : #ffffff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/showHexString"
+                        android:layout_marginStart="15dp"
+                        />
+
+                <TextView
+                        android:layout_toEndOf="@id/colorBlock"
+
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:text="RGB( 255, 255, 255 )"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/showRgb"
+                        android:layout_marginStart="15dp"/>
+
+                <TextView
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentEnd="true"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:textColor="@android:color/white"
+                        android:text="HSL ( 0, 0%, 100% )"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/showHsl"/>
+            </RelativeLayout>
+
+            <ImageView
+                    android:scaleType="centerInside"
+                    android:layout_gravity="center"
+                    android:id="@+id/imageView_p"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+            app:layout_behavior="@string/bottom_sheet_behavior"
+            app:behavior_peekHeight="25dp"
+            android:layout_width="match_parent"
+            app:behavior_hideable="false"
+            android:layout_height="wrap_content"
+            android:id="@+id/relativeLayout">
+
+        <include
+                android:id="@+id/bottomLayout"
+                layout="@layout/bottomsheet_layout"/>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

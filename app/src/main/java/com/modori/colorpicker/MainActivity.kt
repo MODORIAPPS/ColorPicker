@@ -1,9 +1,7 @@
 package com.modori.colorpicker
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -11,10 +9,6 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.get
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -28,13 +22,11 @@ import com.modori.colorpicker.Api.RandomImage
 import com.modori.colorpicker.Model.RandomImageModel
 import com.modori.colorpicker.RA.ColorAdapter
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_screenshot.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.ByteArrayOutputStream
 import android.graphics.BitmapFactory as BitmapFactory1
 
 
@@ -48,10 +40,12 @@ class MainActivity : AppCompatActivity() {
     var lightVibrantSwatch: Palette.Swatch? = null
     var mutedSwatch: Palette.Swatch? = null
 
-    var photoId:String = "eee"
-    var photoBitmap:Bitmap? = null
-    var colorList:IntArray? = null
-    var retrofit:Retrofit? = null
+    var photoId: String? = "eee"
+    var photoBitmap: Bitmap? = null
+    var colorList: IntArray? = null
+    var retrofit: Retrofit? = null
+
+    var imageUri: Uri? = null
 
 
     private val PICTURE_REQUEST_CODE: Int = 123
@@ -66,10 +60,10 @@ class MainActivity : AppCompatActivity() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        if(savedInstanceState != null){
-            val mPhotoId:String = savedInstanceState.getString("photoId")
+        if (savedInstanceState != null) {
+            val mPhotoId: String = savedInstanceState.getString("photoId")
             getPhotoById(mPhotoId)
-        }else{
+        } else {
             getRandomPhoto()
 
         }
@@ -77,13 +71,20 @@ class MainActivity : AppCompatActivity() {
         shareBtn.setOnClickListener {
             val intent = Intent(this, ScreenshotActivity::class.java)
 
-            if(photoId != "eee"){
-                intent.putExtra("photoId", photoId)
-                intent.putExtra("colorList", colorList)
-                startActivity(intent)
+            when {
+                photoId != "eee" -> {
+                    intent.putExtra("photoId", photoId)
+                    intent.putExtra("colorList", colorList)
+                    startActivity(intent)
 
-            }else{
-                Toast.makeText(this,"사진을 받아오고 있습니다.", Toast.LENGTH_SHORT).show()
+                }
+                imageUri != null -> {
+                    intent.putExtra("imageUri", imageUri)
+                    intent.putExtra("colorList", colorList)
+                    startActivity(intent)
+                }
+
+                else -> Toast.makeText(this, "사진을 받아오고 있습니다.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -92,6 +93,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         openGallery.setOnClickListener {
+
             val getFromGallery = Intent(Intent.ACTION_PICK)
             getFromGallery.type = "image/*"
             getFromGallery.putExtra(Intent.ACTION_GET_CONTENT, true)
@@ -100,12 +102,14 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-
+        colorizeBtn.setOnClickListener {
+            startActivity(Intent(this, ColorPickActivity::class.java))
+        }
 
 
     }
 
-    private fun getPhotoById(mPhotoId:String){
+    private fun getPhotoById(mPhotoId: String) {
 
         Log.d("getPhotoByID", mPhotoId)
 
@@ -117,7 +121,7 @@ class MainActivity : AppCompatActivity() {
         val service = retrofit!!.create(RandomImage::class.java)
         val call = service.getPhotoById(mPhotoId)
 
-        call.enqueue(object :Callback<RandomImageModel>{
+        call.enqueue(object : Callback<RandomImageModel> {
             override fun onFailure(call: Call<RandomImageModel>, t: Throwable) {
                 Log.d("IDsearch 실패", t.message)
             }
@@ -143,7 +147,7 @@ class MainActivity : AppCompatActivity() {
                             dataSource: DataSource?,
                             isFirstResource: Boolean
                         ): Boolean {
-
+                            imageUri = null
                             setImageView(resource)
                             photoBitmap = resource
                             createPaletteAsync(resource)
@@ -186,6 +190,7 @@ class MainActivity : AppCompatActivity() {
                                 isFirstResource: Boolean
                             ): Boolean {
                                 setImageView(resource)
+                                imageUri = null
                                 photoId = response.body()!!.id
                                 photoBitmap = resource
                                 Log.d("초기 id", photoId)
@@ -213,16 +218,18 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICTURE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
-                val mDAta = data.data
-                val uri: Uri? = mDAta
+                imageUri = data.data
+                photoId = "eee"
 
-                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+                Log.d("ImageUri",imageUri.toString())
+
+                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
                 imageview.setImageBitmap(bitmap)
+
                 createPaletteAsync(bitmap)
             }
         }
@@ -285,13 +292,10 @@ class MainActivity : AppCompatActivity() {
             setRecyclerView(colorSet)
 
 
-
-
-
         }
     }
 
-    private fun setImageView(bitmap: Bitmap){
+    private fun setImageView(bitmap: Bitmap) {
         YoYo.with(Techniques.FadeIn)
             .duration(300)
             .repeat(0)
@@ -299,7 +303,7 @@ class MainActivity : AppCompatActivity() {
         imageview.setImageBitmap(bitmap)
     }
 
-    private fun setRecyclerView(colorSet:Set<Int>){
+    private fun setRecyclerView(colorSet: Set<Int>) {
         val adapter = ColorAdapter(colorSet.toList(), this)
         colorList = colorSet.toIntArray()
         Log.d("색류", colorSet.toString())
@@ -316,7 +320,6 @@ class MainActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
 
     }
-
 
 
 }
