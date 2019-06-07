@@ -10,11 +10,11 @@
         android:orientation="vertical"
         tools:context=".MainActivity">
 
-    <RelativeLayout
 
+    <RelativeLayout
+            android:background="@color/colorPrimary"
             android:paddingStart="15dp"
             android:paddingEnd="15dp"
-            android:background="@color/colorPrimary"
             android:id="@+id/utilToolBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize">
@@ -28,7 +28,6 @@
                 android:id="@+id/openGallery"
                 android:layout_width="40dp"
                 android:layout_height="match_parent"/>
-
 
         <ImageView
                 android:layout_marginStart="15dp"
@@ -53,6 +52,7 @@
                 android:layout_height="match_parent"/>
 
         <ImageView
+                android:visibility="gone"
                 android:layout_toEndOf="@id/refreshBtn"
                 android:layout_centerVertical="true"
                 android:tint="@android:color/white"
@@ -76,7 +76,13 @@
                 android:scaleType="centerCrop"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
+
     </RelativeLayout>
+    <!--<RelativeLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="80dp">-->
+
+    <!--</RelativeLayout>-->
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/colorsRV"

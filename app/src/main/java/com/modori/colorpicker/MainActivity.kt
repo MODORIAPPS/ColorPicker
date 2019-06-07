@@ -1,6 +1,7 @@
 package com.modori.colorpicker
 
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -9,6 +10,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -27,6 +29,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.InputStream
 import android.graphics.BitmapFactory as BitmapFactory1
 
 
@@ -40,12 +43,14 @@ class MainActivity : AppCompatActivity() {
     var lightVibrantSwatch: Palette.Swatch? = null
     var mutedSwatch: Palette.Swatch? = null
 
-    var photoId: String? = "eee"
+    var photoId: String = "eee"
     var photoBitmap: Bitmap? = null
     var colorList: IntArray? = null
     var retrofit: Retrofit? = null
 
-    var imageUri: Uri? = null
+    lateinit var imageUri: Uri
+
+    var imageType: Boolean? = null
 
 
     private val PICTURE_REQUEST_CODE: Int = 123
@@ -71,20 +76,23 @@ class MainActivity : AppCompatActivity() {
         shareBtn.setOnClickListener {
             val intent = Intent(this, ScreenshotActivity::class.java)
 
-            when {
-                photoId != "eee" -> {
-                    intent.putExtra("photoId", photoId)
-                    intent.putExtra("colorList", colorList)
-                    startActivity(intent)
+            if (imageType != null) {
+                when (imageType) {
+                    true -> {
+                        intent.putExtra("photoId", photoId)
+                        intent.putExtra("colorList", colorList)
+                        startActivity(intent)
 
+                    }
+                    false -> {
+                        intent.putExtra("photoId", "eee")
+                        intent.putExtra("imageUri", imageUri)
+                        intent.putExtra("colorList", colorList)
+                        startActivity(intent)
+                    }
                 }
-                imageUri != null -> {
-                    intent.putExtra("imageUri", imageUri)
-                    intent.putExtra("colorList", colorList)
-                    startActivity(intent)
-                }
-
-                else -> Toast.makeText(this, "사진을 받아오고 있습니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "사진을 받아오고 있습니다.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -147,7 +155,7 @@ class MainActivity : AppCompatActivity() {
                             dataSource: DataSource?,
                             isFirstResource: Boolean
                         ): Boolean {
-                            imageUri = null
+                            imageUri = "null".toUri()
                             setImageView(resource)
                             photoBitmap = resource
                             createPaletteAsync(resource)
@@ -190,7 +198,7 @@ class MainActivity : AppCompatActivity() {
                                 isFirstResource: Boolean
                             ): Boolean {
                                 setImageView(resource)
-                                imageUri = null
+                                imageType = true
                                 photoId = response.body()!!.id
                                 photoBitmap = resource
                                 Log.d("초기 id", photoId)
@@ -225,14 +233,74 @@ class MainActivity : AppCompatActivity() {
                 imageUri = data.data
                 photoId = "eee"
 
-                Log.d("ImageUri",imageUri.toString())
+                Log.d("ImageUri", imageUri.toString())
+                getResizedBitmap(imageUri)
 
-                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
+                val bitmap: Bitmap = getResizedBitmap(imageUri)
+                //getResizedBitmap(imageUri)
+
                 imageview.setImageBitmap(bitmap)
-
                 createPaletteAsync(bitmap)
+                imageType = false
             }
         }
+
+    }
+
+    private fun getResizedBitmap(uri: Uri):Bitmap {
+        val options: android.graphics.BitmapFactory.Options = android.graphics.BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+
+        val input: InputStream = contentResolver.openInputStream(uri)!!
+
+        Log.d("받아온 InputStream", input.toString())
+        android.graphics.BitmapFactory.decodeStream(input, null, options)
+        //options.inSampleSize = getResizeRate(options.outWidth, options.outHeight, 900, 900)
+        if(options.outWidth * options.outHeight >= 900 * 900){
+            options.inSampleSize = 4
+        }else{
+            options.inSampleSize = 1
+        }
+        Log.d("줄여진 사이즈", options.inSampleSize.toString())
+        options.inJustDecodeBounds = false
+
+        val mInput:InputStream = contentResolver.openInputStream(uri)
+//        val bitmap:Bitmap
+//        try{
+//            bitmap = android.graphics.BitmapFactory.decodeStream(mInput, null, options)
+//        }catch (e:Exception){
+//            Log.d("실패사유", e.message)
+//        }
+
+        return android.graphics.BitmapFactory.decodeStream(mInput, null, options)
+
+
+    }
+
+    private fun getResizeRate(outWidth: Int, outHeight: Int, wantWidth: Int, wantHeight: Int): Int {
+        var size: Int = 1
+
+        var mOutWidth = outWidth
+        var mOutHeight = outHeight
+
+        Log.d("받은 사진 가로", mOutWidth.toString())
+        Log.d("받은 사진 세로", mOutHeight.toString())
+
+        return if (outWidth * outHeight < wantWidth * wantHeight) {
+            while (mOutWidth < wantWidth || mOutHeight < wantHeight) {
+                mOutWidth /= 2
+                mOutHeight /= 2
+
+                size *= 2
+
+            }
+
+            size
+        } else {
+            1
+
+        }
+
 
     }
 
@@ -297,11 +365,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun setImageView(bitmap: Bitmap) {
         YoYo.with(Techniques.FadeIn)
-            .duration(300)
+            .duration(500)
             .repeat(0)
             .playOn(imageview)
         imageview.setImageBitmap(bitmap)
     }
+
 
     private fun setRecyclerView(colorSet: Set<Int>) {
         val adapter = ColorAdapter(colorSet.toList(), this)
@@ -313,7 +382,7 @@ class MainActivity : AppCompatActivity() {
         utilToolBar.setBackgroundColor(colorList!![0])
 
         YoYo.with(Techniques.FadeIn)
-            .duration(300)
+            .duration(500)
             .repeat(0)
             .playOn(colorsRV)
 

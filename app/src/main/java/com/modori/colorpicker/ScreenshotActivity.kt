@@ -43,16 +43,13 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
+import java.io.*
 
 class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
-    var photoBitmap: Bitmap? = null
-    var mColorList:IntArray? = null
-    var rgbList:ArrayList<String>? = ArrayList()
+    lateinit var photoBitmap: Bitmap
+    lateinit var mColorList:IntArray
+    var rgbList:ArrayList<String> = ArrayList()
     var stringColors = "33"
     var photoId:String = "eee"
 
@@ -75,86 +72,90 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
         val colorViews: Array<View> = arrayOf(view1, view2, view3, view4, view5, view6, view7)
 
-        if (intent.getStringExtra("photoId") != "eee") {
-            getPhotoById(intent.getStringExtra("photoId"))
-            val colorList: IntArray = intent.getIntArrayExtra("colorList")
-            mColorList = intent.getIntArrayExtra("colorList")
+        when {
+            intent.getStringExtra("photoId") != "eee" -> {
+                getPhotoById(intent.getStringExtra("photoId"))
+                val colorList: IntArray = intent.getIntArrayExtra("colorList")
+                mColorList = intent.getIntArrayExtra("colorList")
 
-            var index: Int = 0
-            for (item in colorList) {
-                colorViews[index].setBackgroundColor(item)
-                index++
-            }
+                var index: Int = 0
+                for (item in colorList) {
+                    colorViews[index].setBackgroundColor(item)
+                    index++
+                }
 
-            for (i in index until colorViews.size) {
-                colorViews[i].visibility = View.GONE
-            }
+                for (i in index until colorViews.size) {
+                    colorViews[i].visibility = View.GONE
+                }
 
-            val stringColor: ArrayList<String> = arrayListOf()
+                val stringColor: ArrayList<String> = arrayListOf()
 
-            for (item in colorList) {
-                stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
+                for (item in colorList) {
+                    stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
 
-            }
-            toolBar.setBackgroundColor(colorList[0])
-
-
-            stringColors = stringColor.toString()
-
-            for (item in stringColor){
-                val color:Int = Color.parseColor(item)
-                rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
-            }
-
-            colorListView.text = stringColors
-            colorRGBView.text = rgbList.toString()
+                }
+                toolBar.setBackgroundColor(colorList[0])
 
 
-        }
-        else if(intent.getParcelableExtra<Uri>("imageUri") != null){
-            val uri:Uri = intent.getParcelableExtra("imageUri") as Uri
-            imageView_sc.setImageURI(uri)
+                stringColors = stringColor.toString()
 
-            //val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-            //imageView_sc.setImageBitmap(bitmap)
+                for (item in stringColor){
+                    val color:Int = Color.parseColor(item)
+                    rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
+                }
 
-            val colorList: IntArray = intent.getIntArrayExtra("colorList")
-            mColorList = intent.getIntArrayExtra("colorList")
+                colorListView.text = stringColors
+                colorRGBView.text = rgbList.toString()
 
-            var index: Int = 0
-            for (item in colorList) {
-                colorViews[index].setBackgroundColor(item)
-                index++
-            }
-
-            for (i in index until colorViews.size) {
-                colorViews[i].visibility = View.GONE
-            }
-
-            val stringColor: ArrayList<String> = arrayListOf()
-
-            for (item in colorList) {
-                stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
 
             }
-            toolBar.setBackgroundColor(colorList[0])
+            intent.getParcelableExtra<Uri>("imageUri") != null -> {
+                val uri:Uri = intent.getParcelableExtra("imageUri") as Uri
+                imageView_sc.setImageBitmap(getResizedBitmap(uri))
+                photoId = uri.toString()
+
+                //val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+                //imageView_sc.setImageBitmap(bitmap)
+
+                val colorList: IntArray = intent.getIntArrayExtra("colorList")
+                mColorList = intent.getIntArrayExtra("colorList")
+
+                var index: Int = 0
+                for (item in colorList) {
+                    colorViews[index].setBackgroundColor(item)
+                    index++
+                }
+
+                for (i in index until colorViews.size) {
+                    colorViews[i].visibility = View.GONE
+                }
+
+                val stringColor: ArrayList<String> = arrayListOf()
+
+                for (item in colorList) {
+                    stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
+
+                }
+                toolBar.setBackgroundColor(colorList[0])
 
 
-            stringColors = stringColor.toString()
+                stringColors = stringColor.toString()
 
-            for (item in stringColor){
-                val color:Int = Color.parseColor(item)
-                rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
+                for (item in stringColor){
+                    val color:Int = Color.parseColor(item)
+                    rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
+                }
+
+                colorListView.text = stringColors
+                colorRGBView.text = rgbList.toString()
+
+
+
             }
-
-            colorListView.text = stringColors
-            colorRGBView.text = rgbList.toString()
-
-
-
-        }else{
-            Toast.makeText(this, "잘못된 접근입니다.", Toast.LENGTH_LONG).show()
-            finish()
+            else -> {
+                Toast.makeText(this, "잘못된 접근입니다.", Toast.LENGTH_LONG).show()
+                finish()
+            }
         }
 
 
@@ -190,7 +191,7 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
                 R.id.captureBtn -> {
                     val builder = AlertDialog.Builder(this)
                     builder.setTitle("사진을 색깔과 함께 저장합니다.")
-                    builder.setMessage("사진은 내장메모리의 ColorPicker 폴더안에 저장됩니다.")
+                    builder.setMessage("사진은 내장메모리의 Pictures 폴더안에 저장됩니다.")
                     builder.setPositiveButton("확인") { _, _ ->
                         val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
                         storeScreenShot(bitmap, intent.getStringExtra("photoId") + "_CAP" + ".jpg")
@@ -300,10 +301,13 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun storeScreenShot(bitmap: Bitmap, filename: String) {
         var out: OutputStream? = null
-        val dir = File(Environment.getExternalStorageDirectory().toString() + "/ColorPicker/")
-        dir.mkdir()
+        //val dir = File(Environment.getExternalStorageDirectory().toString() + "/ColorPicker/")
+        //dir.mkdir()
 
-        val imageFile: File = File(dir, filename)
+        val dir = File(Environment.getExternalStorageDirectory().absolutePath + "/ColorPicker/")
+        dir.mkdir()
+        val imageFile = File(dir, filename)
+
 
 
         out = FileOutputStream(imageFile)
@@ -330,6 +334,36 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
         val path: String = MediaStore.Images.Media.insertImage(this.contentResolver, bitmap, "title", null)
         return Uri.parse(path)
+    }
+
+    private fun getResizedBitmap(uri: Uri):Bitmap {
+        val options: android.graphics.BitmapFactory.Options = android.graphics.BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+
+        val input: InputStream = contentResolver.openInputStream(uri)!!
+
+        Log.d("받아온 InputStream", input.toString())
+        android.graphics.BitmapFactory.decodeStream(input, null, options)
+        //options.inSampleSize = getResizeRate(options.outWidth, options.outHeight, 900, 900)
+        if(options.outWidth * options.outHeight >= 900 * 900){
+            options.inSampleSize = 4
+        }else{
+            options.inSampleSize = 1
+        }
+        Log.d("줄여진 사이즈", options.inSampleSize.toString())
+        options.inJustDecodeBounds = false
+
+        val mInput: InputStream = contentResolver.openInputStream(uri)
+//        val bitmap:Bitmap
+//        try{
+//            bitmap = android.graphics.BitmapFactory.decodeStream(mInput, null, options)
+//        }catch (e:Exception){
+//            Log.d("실패사유", e.message)
+//        }
+
+        return android.graphics.BitmapFactory.decodeStream(mInput, null, options)
+
+
     }
 
 }

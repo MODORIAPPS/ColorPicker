@@ -32,9 +32,11 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
 
         val hexColor:String = String.format("#%06X", (0xFFFFFF and colorList[position]))
         val color:Int = Color.parseColor(hexColor)
+        val strRGB:String = "RGB( ${color.red} , ${color.green} , ${color.blue} )"
+        //val strHsl:Stirng =
+
         Log.d("RED", color.red.toString())
         Log.d("받아온 색", colorList[position].toString())
-        val strRGB:String = "RGB( ${color.red} , ${color.green} , ${color.blue} )"
 
         holder.colorHex.text = hexColor
         holder.colorPanel.setBackgroundColor(colorList[position])
@@ -45,6 +47,7 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
             return@setOnLongClickListener setClipBoardLink(context, "HEX : $hexColor, $strRGB")
 
         }
+        //Color.colorTohs
 
         holder.colorRGB.text = strRGB
 
@@ -60,13 +63,14 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
         val colorPanel: View = view.findViewById(R.id.colorPanel) as View
         val colorHex: TextView = view.findViewById(R.id.colorHex) as TextView
         val colorRGB:TextView = view.findViewById(R.id.colorRGB) as TextView
+        val colorHsl:TextView = view.findViewById(R.id.colorHsl) as TextView
     }
 
     private fun setClipBoardLink(context: Context, link:String):Boolean{
         val clipboardManager:ClipboardManager = context.getSystemService(Activity.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData:ClipData = ClipData.newPlainText("label", link)
         clipboardManager.primaryClip = clipData
-        Toast.makeText(context,link + "를 클립보드에 복사하였습니다.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context,link + "를 클립보드에 복사하였습니다.", Toast.LENGTH_LONG).show()
 
         return true
     }

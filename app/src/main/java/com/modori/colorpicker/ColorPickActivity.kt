@@ -17,6 +17,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.view.MotionEvent
 import android.view.View.OnTouchListener
 import android.widget.ImageView
+import java.io.InputStream
 
 
 class ColorPickActivity : AppCompatActivity() {
@@ -111,5 +112,34 @@ class ColorPickActivity : AppCompatActivity() {
 
     }
 
+    private fun getResizedBitmap(uri: Uri):Bitmap {
+        val options: android.graphics.BitmapFactory.Options = android.graphics.BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+
+        val input: InputStream = contentResolver.openInputStream(uri)!!
+
+        Log.d("받아온 InputStream", input.toString())
+        android.graphics.BitmapFactory.decodeStream(input, null, options)
+        //options.inSampleSize = getResizeRate(options.outWidth, options.outHeight, 900, 900)
+        if(options.outWidth * options.outHeight >= 900 * 900){
+            options.inSampleSize = 4
+        }else{
+            options.inSampleSize = 1
+        }
+        Log.d("줄여진 사이즈", options.inSampleSize.toString())
+        options.inJustDecodeBounds = false
+
+        val mInput: InputStream = contentResolver.openInputStream(uri)
+//        val bitmap:Bitmap
+//        try{
+//            bitmap = android.graphics.BitmapFactory.decodeStream(mInput, null, options)
+//        }catch (e:Exception){
+//            Log.d("실패사유", e.message)
+//        }
+
+        return android.graphics.BitmapFactory.decodeStream(mInput, null, options)
+
+
+    }
 
 }
