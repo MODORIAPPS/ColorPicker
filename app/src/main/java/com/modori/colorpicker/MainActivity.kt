@@ -67,7 +67,13 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState != null) {
             val mPhotoId: String = savedInstanceState.getString("photoId")
-            getPhotoById(mPhotoId)
+            val mPhotoBitmap:Bitmap = savedInstanceState.getParcelable("photoBitmap")
+            val mPhotoType:Boolean = savedInstanceState.getBoolean("photoType")
+            imageType = mPhotoType
+            //getPhotoById(mPhotoId)
+            photoId = mPhotoId
+            imageview.setImageBitmap(mPhotoBitmap)
+            createPaletteAsync(mPhotoBitmap)
         } else {
             getRandomPhoto()
 
@@ -223,6 +229,9 @@ class MainActivity : AppCompatActivity() {
         Log.d("photoId", photoId)
         outState.putString("photoId", photoId)
 
+        outState.putParcelable("photoBitmap", photoBitmap)
+        outState.putBoolean("photoType", imageType!!)
+
     }
 
 
@@ -308,6 +317,8 @@ class MainActivity : AppCompatActivity() {
     private fun createPaletteAsync(bitmap: Bitmap) {
         Palette.from(bitmap).generate {
 
+
+            photoBitmap = bitmap
             vibrantSwatch = it?.vibrantSwatch
             darkMutedSwatch = it?.darkMutedSwatch
             darkVibrantSwatch = it?.darkVibrantSwatch
