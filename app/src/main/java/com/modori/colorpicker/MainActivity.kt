@@ -1,9 +1,11 @@
 package com.modori.colorpicker
 
+import android.Manifest
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -12,6 +14,8 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
 import androidx.palette.graphics.Palette
@@ -59,39 +63,57 @@ class MainActivity : AppCompatActivity() {
 
 
     private val PICTURE_REQUEST_CODE: Int = 123
+    private val MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val ReadpermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (ReadpermissionCheck == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE
+            )
+
+        } else {
+
+            if (savedInstanceState != null) {
+
+                if(savedInstanceState.getString("photoId") != null){
+                    val mPhotoId: String = savedInstanceState.getString("photoId")
+                    val mPhotoUri: Uri = savedInstanceState.getParcelable("photoUri")
+                    val mPhotoType: Boolean = savedInstanceState.getBoolean("photoType")
+                    imageType = mPhotoType
+                    //getPhotoById(mPhotoId)
+                    imageUri = mPhotoUri
+                    photoId = mPhotoId
+                    imageview.setImageURI(mPhotoUri)
+                    createPaletteAsync(MediaStore.Images.Media.getBitmap(contentResolver, imageUri))
+
+                }else{
+                    getRandomPhoto()
+                }
+
+
+            } else {
+                getRandomPhoto()
+
+            }
+
+
+
+
+        }
+
+
         retrofit = Retrofit.Builder()
             .baseUrl("https://api.unsplash.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        if (savedInstanceState != null) {
-
-            if(savedInstanceState.getString("photoId") != null){
-                val mPhotoId: String = savedInstanceState.getString("photoId")
-                val mPhotoUri: Uri = savedInstanceState.getParcelable("photoUri")
-                val mPhotoType: Boolean = savedInstanceState.getBoolean("photoType")
-                imageType = mPhotoType
-                //getPhotoById(mPhotoId)
-                imageUri = mPhotoUri
-                photoId = mPhotoId
-                imageview.setImageURI(mPhotoUri)
-                createPaletteAsync(MediaStore.Images.Media.getBitmap(contentResolver, imageUri))
-
-            }else{
-                getRandomPhoto()
-            }
-
-
-        } else {
-            getRandomPhoto()
-
-        }
 
         shareBtn.setOnClickListener {
             val intent = Intent(this, ScreenshotActivity::class.java)
@@ -433,6 +455,18 @@ class MainActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
 
     }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getRandomPhoto()
+            } else {
+
+            }
+        }
+    }
+
 
 
 }
