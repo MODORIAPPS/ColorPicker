@@ -4,18 +4,14 @@ import android.Manifest
 import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.transition.Visibility
 import android.util.Log
 import android.view.View
-import android.view.View.SCROLL_INDICATOR_END
-import android.view.View.VISIBLE
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
@@ -23,21 +19,18 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
-import androidx.core.view.isGone
-import androidx.core.view.isVisible
-import androidx.palette.graphics.Palette
-import butterknife.BindView
+import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.modori.colorpicker.Api.RandomImage
-import com.modori.colorpicker.Model.RandomImageModel
+import com.modori.colorpicker.Utils.PaletteTool
+import com.modori.colorpicker.model.RandomImageModel
 import com.modori.colorpicker.Utils.Screenshot
-import kotlinx.android.synthetic.main.activity_main.*
+import com.modori.colorpicker.model.ActivityModel
 import kotlinx.android.synthetic.main.activity_screenshot.*
-import kotlinx.android.synthetic.main.color_items_vertical.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -48,18 +41,21 @@ import java.io.*
 class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
     lateinit var photoBitmap: Bitmap
-    lateinit var mColorList:IntArray
-    var rgbList:ArrayList<String> = ArrayList()
+    lateinit var colorSet: MutableSet<Int>
+
+    lateinit var mColorList: IntArray
+    lateinit var viewModel: ActivityModel
+    var rgbList: ArrayList<String> = ArrayList()
     var stringColors = "33"
-    var photoId:String = "eee"
+    var photoId: String = "eee"
 
     private val MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_screenshot)
+        viewModel = ViewModelProviders.of(this).get(ActivityModel::class.java)
 
-        permissionCheck()
 
         val view1: View = findViewById(R.id.view1)
         val view2: View = findViewById(R.id.view2)
@@ -71,18 +67,20 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
 
         val colorViews: Array<View> = arrayOf(view1, view2, view3, view4, view5, view6, view7)
+        var colorList: IntArray
 
-        when {
-            intent.getStringExtra("photoId") != "eee" -> {
-                getPhotoById(intent.getStringExtra("photoId"))
-                val colorList: IntArray = intent.getIntArrayExtra("colorList")
-                mColorList = intent.getIntArrayExtra("colorList")
+        viewModel.getBitmaps().observe(this, androidx.lifecycle.Observer {
+                colorList = PaletteTool.getColorSet(viewModel.getBitmaps().value!!).toIntArray()
 
-                var index: Int = 0
+                var index = 0
                 for (item in colorList) {
                     colorViews[index].setBackgroundColor(item)
                     index++
                 }
+
+                Glide.with(this).load(viewModel.getBitmaps().value!!).override(800, 800).into(imageView_sc)
+
+
 
                 for (i in index until colorViews.size) {
                     colorViews[i].visibility = View.GONE
@@ -99,64 +97,105 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
                 stringColors = stringColor.toString()
 
-                for (item in stringColor){
-                    val color:Int = Color.parseColor(item)
+                for (item in stringColor) {
+                    val color: Int = Color.parseColor(item)
                     rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
                 }
+
 
                 colorListView.text = stringColors
                 colorRGBView.text = rgbList.toString()
 
 
-            }
-            intent.getParcelableExtra<Uri>("imageUri") != null -> {
-                val uri:Uri = intent.getParcelableExtra("imageUri") as Uri
-                imageView_sc.setImageBitmap(getResizedBitmap(uri))
-                photoId = uri.toString()
+        })
 
-                //val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-                //imageView_sc.setImageBitmap(bitmap)
+        permissionCheck()
 
-                val colorList: IntArray = intent.getIntArrayExtra("colorList")
-                mColorList = intent.getIntArrayExtra("colorList")
-
-                var index: Int = 0
-                for (item in colorList) {
-                    colorViews[index].setBackgroundColor(item)
-                    index++
-                }
-
-                for (i in index until colorViews.size) {
-                    colorViews[i].visibility = View.GONE
-                }
-
-                val stringColor: ArrayList<String> = arrayListOf()
-
-                for (item in colorList) {
-                    stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
-
-                }
-                toolBar.setBackgroundColor(colorList[0])
-
-
-                stringColors = stringColor.toString()
-
-                for (item in stringColor){
-                    val color:Int = Color.parseColor(item)
-                    rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
-                }
-
-                colorListView.text = stringColors
-                colorRGBView.text = rgbList.toString()
-
-
-
-            }
-            else -> {
-                Toast.makeText(this, "잘못된 접근입니다.", Toast.LENGTH_LONG).show()
-                finish()
-            }
-        }
+//        when {
+//            intent.getStringExtra("photoId") != "eee" -> {
+//                getPhotoById(intent.getStringExtra("photoId"))
+//                val colorList: IntArray = intent.getIntArrayExtra("colorList")
+//                mColorList = intent.getIntArrayExtra("colorList")
+//
+//                var index: Int = 0
+//                for (item in colorList) {
+//                    colorViews[index].setBackgroundColor(item)
+//                    index++
+//                }
+//
+//                for (i in index until colorViews.size) {
+//                    colorViews[i].visibility = View.GONE
+//                }
+//
+//                val stringColor: ArrayList<String> = arrayListOf()
+//
+//                for (item in colorList) {
+//                    stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
+//
+//                }
+//                toolBar.setBackgroundColor(colorList[0])
+//
+//
+//                stringColors = stringColor.toString()
+//
+//                for (item in stringColor){
+//                    val color:Int = Color.parseColor(item)
+//                    rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
+//                }
+//
+//                colorListView.text = stringColors
+//                colorRGBView.text = rgbList.toString()
+//
+//
+//            }
+//            intent.getParcelableExtra<Uri>("imageUri") != null -> {
+//                val uri:Uri = intent.getParcelableExtra("imageUri") as Uri
+//                imageView_sc.setImageBitmap(getResizedBitmap(uri))
+//                photoId = uri.toString()
+//
+//                //val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+//                //imageView_sc.setImageBitmap(bitmap)
+//
+//                val colorList: IntArray = intent.getIntArrayExtra("colorList")
+//                mColorList = intent.getIntArrayExtra("colorList")
+//
+//                var index: Int = 0
+//                for (item in colorList) {
+//                    colorViews[index].setBackgroundColor(item)
+//                    index++
+//                }
+//
+//                for (i in index until colorViews.size) {
+//                    colorViews[i].visibility = View.GONE
+//                }
+//
+//                val stringColor: ArrayList<String> = arrayListOf()
+//
+//                for (item in colorList) {
+//                    stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
+//
+//                }
+//                toolBar.setBackgroundColor(colorList[0])
+//
+//
+//                stringColors = stringColor.toString()
+//
+//                for (item in stringColor){
+//                    val color:Int = Color.parseColor(item)
+//                    rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
+//                }
+//
+//                colorListView.text = stringColors
+//                colorRGBView.text = rgbList.toString()
+//
+//
+//
+//            }
+//            else -> {
+//                Toast.makeText(this, "잘못된 접근입니다.", Toast.LENGTH_LONG).show()
+//                finish()
+//            }
+//        }
 
 
         shareBtn_sc.setOnClickListener(this)
@@ -165,25 +204,25 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
         captureBtn.setOnClickListener(this)
 
 
-
     }
 
     override fun onClick(v: View?) {
 
-        if(photoId != "eee"){
-            when(v?.id){
+        if (photoId != "eee") {
+            when (v?.id) {
 
 
                 R.id.shareBtn_sc -> {
                     val intent = Intent(Intent.ACTION_SEND)
                     intent.type = "text/plain"
 
-                    intent.putExtra(Intent.EXTRA_TEXT,stringColors)
+                    intent.putExtra(Intent.EXTRA_TEXT, stringColors)
 
-                    val chooser:Intent = Intent.createChooser(intent,"색 공유하기")
+                    val chooser: Intent = Intent.createChooser(intent, "색 공유하기")
                     startActivity(chooser)
                 }
-                R.id.infoBtn ->{}
+                R.id.infoBtn -> {
+                }
                 R.id.copyBtn -> {
                     val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
                     copyToClipBoard(bitmap)
@@ -201,8 +240,8 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
                     builder.show()
                 }
             }
-        }else{
-            Toast.makeText(this,"사진을 받아오고 있습니다.", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "사진을 받아오고 있습니다.", Toast.LENGTH_SHORT).show()
 
         }
 
@@ -308,8 +347,6 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
         dir.mkdir()
         val imageFile = File(dir, filename)
 
-
-
         out = FileOutputStream(imageFile)
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
         out.flush()
@@ -326,7 +363,7 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
         val clipData: ClipData = ClipData.newUri(contentResolver, "Image", getImageUri(imageBitmap))
         clipBoard.primaryClip = clipData
 
-        Toast.makeText(this, "이미지를 클립보드에 복사하였습니다", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.Screenshot_copyedToast), Toast.LENGTH_SHORT).show()
     }
 
     private fun getImageUri(bitmap: Bitmap): Uri {
@@ -336,34 +373,9 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
         return Uri.parse(path)
     }
 
-    private fun getResizedBitmap(uri: Uri):Bitmap {
-        val options: android.graphics.BitmapFactory.Options = android.graphics.BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-
-        val input: InputStream = contentResolver.openInputStream(uri)!!
-
-        Log.d("받아온 InputStream", input.toString())
-        android.graphics.BitmapFactory.decodeStream(input, null, options)
-        //options.inSampleSize = getResizeRate(options.outWidth, options.outHeight, 900, 900)
-        if(options.outWidth * options.outHeight >= 900 * 900){
-            options.inSampleSize = 4
-        }else{
-            options.inSampleSize = 1
-        }
-        Log.d("줄여진 사이즈", options.inSampleSize.toString())
-        options.inJustDecodeBounds = false
-
-        val mInput: InputStream = contentResolver.openInputStream(uri)
-//        val bitmap:Bitmap
-//        try{
-//            bitmap = android.graphics.BitmapFactory.decodeStream(mInput, null, options)
-//        }catch (e:Exception){
-//            Log.d("실패사유", e.message)
-//        }
-
-        return android.graphics.BitmapFactory.decodeStream(mInput, null, options)
+    override fun onDestroy() {
+        super.onDestroy()
 
 
     }
-
 }

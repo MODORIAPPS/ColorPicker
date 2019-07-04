@@ -1,8 +1,7 @@
 package com.modori.colorpicker.Api
 
-import com.modori.colorpicker.Model.RandomImageModel
+import com.modori.colorpicker.model.RandomImageModel
 import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Path

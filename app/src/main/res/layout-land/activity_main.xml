@@ -73,6 +73,7 @@
             android:layout_height="match_parent">
 
         <com.github.chrisbanes.photoview.PhotoView
+                android:adjustViewBounds="true"
                 android:id="@+id/imageview"
                 android:scaleType="centerCrop"
                 android:layout_width="match_parent"

@@ -1,4 +1,4 @@
-package com.modori.colorpicker.Model
+package com.modori.colorpicker.model
 
 import com.google.gson.annotations.SerializedName
 

@@ -35,8 +35,8 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
         val strRGB:String = "RGB( ${color.red} , ${color.green} , ${color.blue} )"
         //val strHsl:Stirng =
 
-        Log.d("RED", color.red.toString())
-        Log.d("받아온 색", colorList[position].toString())
+        //Log.d("RED", color.red.toString())
+        //Log.d("받아온 색", colorList[position].toString())
 
         holder.colorHex.text = hexColor
         holder.colorPanel.setBackgroundColor(colorList[position])
