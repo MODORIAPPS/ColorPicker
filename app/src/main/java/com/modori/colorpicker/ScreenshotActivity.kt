@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -44,7 +45,6 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
     lateinit var colorSet: MutableSet<Int>
 
     lateinit var mColorList: IntArray
-    lateinit var viewModel: ActivityModel
     var rgbList: ArrayList<String> = ArrayList()
     var stringColors = "33"
     var photoId: String = "eee"
@@ -54,8 +54,6 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_screenshot)
-        viewModel = ViewModelProviders.of(this).get(ActivityModel::class.java)
-
 
         val view1: View = findViewById(R.id.view1)
         val view2: View = findViewById(R.id.view2)
@@ -63,141 +61,53 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
         val view4: View = findViewById(R.id.view4)
         val view5: View = findViewById(R.id.view5)
         val view6: View = findViewById(R.id.view6)
-        val view7: View = findViewById(R.id.view7)
+        val view7: View = findViewById(R.id.view7);
 
 
         val colorViews: Array<View> = arrayOf(view1, view2, view3, view4, view5, view6, view7)
-        var colorList: IntArray
+        val colorList: IntArray
 
-        viewModel.getBitmaps().observe(this, androidx.lifecycle.Observer {
-                colorList = PaletteTool.getColorSet(viewModel.getBitmaps().value!!).toIntArray()
+        val extras: Bundle = intent.extras
+        val byteArray = extras.getByteArray("image")
+        val colorArray = extras.getIntArray("color")
+        val photoBitmap: Bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        Glide.with(this).load(photoBitmap).override(800, 800).into(imageView_sc)
 
-                var index = 0
-                for (item in colorList) {
-                    colorViews[index].setBackgroundColor(item)
-                    index++
-                }
-
-                Glide.with(this).load(viewModel.getBitmaps().value!!).override(800, 800).into(imageView_sc)
+        colorList = colorArray
+        println(colorList)
 
 
+        var index = 0
+        for (item in colorList) {
+            colorViews[index].setBackgroundColor(item)
+            index++
+        }
 
-                for (i in index until colorViews.size) {
-                    colorViews[i].visibility = View.GONE
-                }
+        for (i in index until colorViews.size) {
+            colorViews[i].visibility = View.GONE
+        }
 
-                val stringColor: ArrayList<String> = arrayListOf()
+        val stringColor: ArrayList<String> = arrayListOf()
 
-                for (item in colorList) {
-                    stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
+        for (item in colorList) {
+            stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
 
-                }
-                toolBar.setBackgroundColor(colorList[0])
-
-
-                stringColors = stringColor.toString()
-
-                for (item in stringColor) {
-                    val color: Int = Color.parseColor(item)
-                    rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
-                }
+        }
+        toolBar.setBackgroundColor(colorList[0])
 
 
-                colorListView.text = stringColors
-                colorRGBView.text = rgbList.toString()
+        stringColors = stringColor.toString()
+
+        for (item in stringColor) {
+            val color: Int = Color.parseColor(item)
+            rgbList.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
+        }
 
 
-        })
+        colorListView.text = stringColors
+        colorRGBView.text = rgbList.toString()
 
         permissionCheck()
-
-//        when {
-//            intent.getStringExtra("photoId") != "eee" -> {
-//                getPhotoById(intent.getStringExtra("photoId"))
-//                val colorList: IntArray = intent.getIntArrayExtra("colorList")
-//                mColorList = intent.getIntArrayExtra("colorList")
-//
-//                var index: Int = 0
-//                for (item in colorList) {
-//                    colorViews[index].setBackgroundColor(item)
-//                    index++
-//                }
-//
-//                for (i in index until colorViews.size) {
-//                    colorViews[i].visibility = View.GONE
-//                }
-//
-//                val stringColor: ArrayList<String> = arrayListOf()
-//
-//                for (item in colorList) {
-//                    stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
-//
-//                }
-//                toolBar.setBackgroundColor(colorList[0])
-//
-//
-//                stringColors = stringColor.toString()
-//
-//                for (item in stringColor){
-//                    val color:Int = Color.parseColor(item)
-//                    rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
-//                }
-//
-//                colorListView.text = stringColors
-//                colorRGBView.text = rgbList.toString()
-//
-//
-//            }
-//            intent.getParcelableExtra<Uri>("imageUri") != null -> {
-//                val uri:Uri = intent.getParcelableExtra("imageUri") as Uri
-//                imageView_sc.setImageBitmap(getResizedBitmap(uri))
-//                photoId = uri.toString()
-//
-//                //val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
-//                //imageView_sc.setImageBitmap(bitmap)
-//
-//                val colorList: IntArray = intent.getIntArrayExtra("colorList")
-//                mColorList = intent.getIntArrayExtra("colorList")
-//
-//                var index: Int = 0
-//                for (item in colorList) {
-//                    colorViews[index].setBackgroundColor(item)
-//                    index++
-//                }
-//
-//                for (i in index until colorViews.size) {
-//                    colorViews[i].visibility = View.GONE
-//                }
-//
-//                val stringColor: ArrayList<String> = arrayListOf()
-//
-//                for (item in colorList) {
-//                    stringColor.add(String.format("#%06X", (0xFFFFFF and item)))
-//
-//                }
-//                toolBar.setBackgroundColor(colorList[0])
-//
-//
-//                stringColors = stringColor.toString()
-//
-//                for (item in stringColor){
-//                    val color:Int = Color.parseColor(item)
-//                    rgbList!!.add("RGB( ${color.red} , ${color.green} , ${color.blue} )")
-//                }
-//
-//                colorListView.text = stringColors
-//                colorRGBView.text = rgbList.toString()
-//
-//
-//
-//            }
-//            else -> {
-//                Toast.makeText(this, "잘못된 접근입니다.", Toast.LENGTH_LONG).show()
-//                finish()
-//            }
-//        }
-
-
         shareBtn_sc.setOnClickListener(this)
         infoBtn.setOnClickListener(this)
         copyBtn.setOnClickListener(this)
@@ -208,43 +118,38 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onClick(v: View?) {
 
-        if (photoId != "eee") {
-            when (v?.id) {
+
+        when (v?.id) {
 
 
-                R.id.shareBtn_sc -> {
-                    val intent = Intent(Intent.ACTION_SEND)
-                    intent.type = "text/plain"
+            R.id.shareBtn_sc -> {
+                val intent = Intent(Intent.ACTION_SEND)
+                intent.type = "text/plain"
 
-                    intent.putExtra(Intent.EXTRA_TEXT, stringColors)
+                intent.putExtra(Intent.EXTRA_TEXT, stringColors)
 
-                    val chooser: Intent = Intent.createChooser(intent, "색 공유하기")
-                    startActivity(chooser)
-                }
-                R.id.infoBtn -> {
-                }
-                R.id.copyBtn -> {
-                    val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
-                    copyToClipBoard(bitmap)
-                }
-                R.id.captureBtn -> {
-                    val builder = AlertDialog.Builder(this)
-                    builder.setTitle("사진을 색깔과 함께 저장합니다.")
-                    builder.setMessage("사진은 내장메모리의 Pictures 폴더안에 저장됩니다.")
-                    builder.setPositiveButton("확인") { _, _ ->
-                        val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
-                        storeScreenShot(bitmap, intent.getStringExtra("photoId") + "_CAP" + ".jpg")
-
-                    }.setNegativeButton("취소") { _, _ -> }
-
-                    builder.show()
-                }
+                val chooser: Intent = Intent.createChooser(intent, "색 공유하기")
+                startActivity(chooser)
             }
-        } else {
-            Toast.makeText(this, "사진을 받아오고 있습니다.", Toast.LENGTH_SHORT).show()
+            R.id.infoBtn -> {
+            }
+            R.id.copyBtn -> {
+                val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
+                copyToClipBoard(bitmap)
+            }
+            R.id.captureBtn -> {
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("사진을 색깔과 함께 저장합니다.")
+                builder.setMessage("사진은 내장메모리의 Pictures 폴더안에 저장됩니다.")
+                builder.setPositiveButton("확인") { _, _ ->
+                    val bitmap: Bitmap = Screenshot.takescreenshot(rootView_sc)
+                    storeScreenShot(bitmap, intent.getStringExtra("photoId") + "_CAP" + ".jpg")
 
+                }.setNegativeButton("취소") { _, _ -> }
+
+                builder.show()
+            }
         }
-
     }
 
 

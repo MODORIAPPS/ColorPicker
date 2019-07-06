@@ -2,6 +2,7 @@ package com.modori.colorpicker
 
 import android.Manifest
 import android.app.Activity
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -13,7 +14,6 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -29,11 +29,15 @@ import com.modori.colorpicker.RA.ColorAdapter
 import com.modori.colorpicker.Utils.PaletteTool
 import com.modori.colorpicker.model.ActivityModel
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
 
@@ -55,10 +59,13 @@ class MainActivity : AppCompatActivity() {
     private val PICTURE_REQUEST_CODE: Int = 123
     private val MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2
     lateinit var viewModel: ActivityModel
+    lateinit var pDialog: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        pDialog = ProgressDialog(this)
 
         viewModel = ViewModelProviders.of(this).get(ActivityModel::class.java)
         viewModel.getBitmaps().observe(this, androidx.lifecycle.Observer {
@@ -105,15 +112,12 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        retrofit = Retrofit.Builder()
-            .baseUrl("https://api.unsplash.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
 
         shareBtn.setOnClickListener {
-            val intent = Intent(this, ScreenshotActivity::class.java)
-            startActivity(intent)
+            //            val intent = Intent(this, ScreenshotActivity::class.java)
+//            startActivity(intent)
+//
+            sendBitmapBundle()
         }
         refreshBtn.setOnClickListener {
             getRandomPhoto()
@@ -188,7 +192,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun getRandomPhoto() {
 
-        println("새 사진을 불러옴")
+        setUpDialog()
+        pDialog.show()
+
 
         retrofit = Retrofit.Builder()
             .baseUrl("https://api.unsplash.com/")
@@ -197,44 +203,63 @@ class MainActivity : AppCompatActivity() {
 
         val service = retrofit!!.create(RandomImage::class.java)
         val call = service.getRandomPhoto()
-        call.enqueue(object : Callback<RandomImageModel> {
-            override fun onResponse(call: Call<RandomImageModel>, response: Response<RandomImageModel>) {
-                if (response.isSuccessful) {
+        println("새 사진을 불러옴")
 
-                    Glide.with(applicationContext).asBitmap().load(response.body()!!.urls!!.regular)
-                        .listener(object : RequestListener<Bitmap> {
-                            override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Bitmap>?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                return false
-                            }
+        val getPhoto = GlobalScope.launch(Dispatchers.Default) {
+            call.enqueue(object : Callback<RandomImageModel> {
+                override fun onResponse(call: Call<RandomImageModel>, response: Response<RandomImageModel>) {
+                    if (response.isSuccessful) {
 
-                            override fun onResourceReady(
-                                resource: Bitmap,
-                                model: Any?,
-                                target: Target<Bitmap>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                photoBitmap = resource
-                                viewModel.setBitmap(photoBitmap!!)
-                                setRecyclerView(PaletteTool.getColorSet(photoBitmap!!))
-                                return true
-                            }
-                        }).into(imageview)
+                        Glide.with(applicationContext).asBitmap().load(response.body()!!.urls!!.regular)
+                            .listener(object : RequestListener<Bitmap> {
+                                override fun onLoadFailed(
+                                    e: GlideException?,
+                                    model: Any?,
+                                    target: Target<Bitmap>?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    return false
+                                }
 
+                                override fun onResourceReady(
+                                    resource: Bitmap,
+                                    model: Any?,
+                                    target: Target<Bitmap>?,
+                                    dataSource: DataSource?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    photoBitmap = resource
+                                    viewModel.setBitmap(photoBitmap!!)
+                                    setRecyclerView(PaletteTool.getColorSet(photoBitmap!!))
+                                    return true
+                                }
+                            }).into(imageview)
+
+                        if (pDialog != null && pDialog.isShowing) {
+                            pDialog.dismiss()
+                        }
+
+                    }
+                }
+
+                override fun onFailure(call: Call<RandomImageModel>, t: Throwable) {
+                    Log.d("통신 실패 사유", t.message)
+
+                    if (pDialog != null && pDialog.isShowing) {
+                        pDialog.dismiss()
+                    }
 
                 }
-            }
 
-            override fun onFailure(call: Call<RandomImageModel>, t: Throwable) {
-                Log.d("통신 실패 사유", t.message)
-            }
-        })
 
+            })
+        }
+
+
+    }
+
+    private fun setUpDialog() {
+        pDialog.setMessage("이미지를 불러오고 있어요.")
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -268,6 +293,28 @@ class MainActivity : AppCompatActivity() {
                 //imageType = false
             }
         }
+
+    }
+
+    private fun sendBitmapBundle() {
+        //val bitmap: Bitmap = viewModel.getBitmaps().value!!
+        val bitmap: Bitmap = photoBitmap!!
+        val stream = ByteArrayOutputStream()
+
+        val scale: Float = (1024 / bitmap.width.toFloat())
+        val imageW: Int = (bitmap.width * scale).toInt()
+        val imageH: Int = (bitmap.height * scale).toInt()
+
+        val resize: Bitmap = Bitmap.createScaledBitmap(bitmap, imageW, imageH, true)
+        resize.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+        val byteArray = stream.toByteArray()
+        val colorArray = colorSet.toIntArray()
+
+        val intent = Intent(this, ScreenshotActivity::class.java)
+        intent.putExtra("image", byteArray)
+        intent.putExtra("color", colorArray)
+
+        startActivity(intent)
 
     }
 
@@ -346,16 +393,17 @@ class MainActivity : AppCompatActivity() {
             .repeat(0)
             .playOn(imageview)
 
-        if(bitmap.width > 1000 && bitmap.height >1000){
+        if (bitmap.width > 1000 && bitmap.height > 1000) {
             Glide.with(this).load(bitmap).override(800, 800).into(imageview)
         }
         imageview.setImageBitmap(bitmap)
     }
 
-    private fun setRecyclerView(colorSet: Set<Int>) {
-        val adapter = ColorAdapter(colorSet.toList(), this)
-        colorList = colorSet.toIntArray()
-        Log.d("색류", colorSet.toString())
+    private fun setRecyclerView(set: Set<Int>) {
+        val adapter = ColorAdapter(set.toList(), this)
+        colorList = set.toIntArray()
+        colorSet = set as MutableSet<Int>
+        Log.d("색류", set.toString())
         colorsRV.layoutManager = LinearLayoutManager(this)
         colorsRV.adapter = adapter
 
