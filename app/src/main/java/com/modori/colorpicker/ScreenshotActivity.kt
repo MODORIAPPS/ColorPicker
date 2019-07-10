@@ -26,11 +26,13 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.crashlytics.android.Crashlytics
 import com.modori.colorpicker.Api.RandomImage
 import com.modori.colorpicker.Utils.PaletteTool
 import com.modori.colorpicker.model.RandomImageModel
 import com.modori.colorpicker.Utils.Screenshot
 import com.modori.colorpicker.model.ActivityModel
+import io.fabric.sdk.android.Fabric
 import kotlinx.android.synthetic.main.activity_screenshot.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -54,6 +56,7 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_screenshot)
+        Fabric.with(this, Crashlytics())
 
         val view1: View = findViewById(R.id.view1)
         val view2: View = findViewById(R.id.view2)
@@ -61,19 +64,19 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
         val view4: View = findViewById(R.id.view4)
         val view5: View = findViewById(R.id.view5)
         val view6: View = findViewById(R.id.view6)
-        val view7: View = findViewById(R.id.view7);
+        val view7: View = findViewById(R.id.view7)
 
 
         val colorViews: Array<View> = arrayOf(view1, view2, view3, view4, view5, view6, view7)
         val colorList: IntArray
 
-        val extras: Bundle = intent.extras
+        val extras: Bundle = intent.extras!!
         val byteArray = extras.getByteArray("image")
         val colorArray = extras.getIntArray("color")
-        val photoBitmap: Bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        val photoBitmap: Bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray!!.size)
         Glide.with(this).load(photoBitmap).override(800, 800).into(imageView_sc)
 
-        colorList = colorArray
+        colorList = colorArray!!
         println(colorList)
 
 
@@ -106,6 +109,7 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
 
         colorListView.text = stringColors
         colorRGBView.text = rgbList.toString()
+
 
         permissionCheck()
         shareBtn_sc.setOnClickListener(this)

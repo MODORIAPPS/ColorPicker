@@ -21,6 +21,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.crashlytics.android.Crashlytics
 import com.daimajia.androidanimations.library.Techniques
 import com.daimajia.androidanimations.library.YoYo
 import com.modori.colorpicker.Api.RandomImage
@@ -28,6 +29,7 @@ import com.modori.colorpicker.model.RandomImageModel
 import com.modori.colorpicker.RA.ColorAdapter
 import com.modori.colorpicker.Utils.PaletteTool
 import com.modori.colorpicker.model.ActivityModel
+import io.fabric.sdk.android.Fabric
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -64,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        Fabric.with(this, Crashlytics())
         pDialog = ProgressDialog(this)
 
         viewModel = ViewModelProviders.of(this).get(ActivityModel::class.java)
