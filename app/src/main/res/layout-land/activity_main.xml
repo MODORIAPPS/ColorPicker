@@ -20,25 +20,31 @@
             android:layout_height="match_parent">
 
         <ImageView
+                android:background="?selectableItemBackgroundBorderless"
+
                 android:layout_marginTop="15dp"
                 android:tint="@android:color/white"
                 android:layout_gravity="center"
                 android:src="@drawable/camera_alt_icon"
                 android:id="@+id/openGallery"
-                android:layout_width="40dp"
-                android:layout_height="40dp"/>
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
 
 
         <ImageView
+                android:background="?selectableItemBackgroundBorderless"
+
                 android:layout_marginTop="15dp"
                 android:tint="@android:color/white"
                 android:layout_gravity="center"
                 android:src="@drawable/refresh_icon"
                 android:id="@+id/refreshBtn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"/>
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
 
         <ImageView
+                android:background="?selectableItemBackgroundBorderless"
+
                 android:visibility="gone"
                 android:layout_marginTop="15dp"
                 android:tint="@android:color/white"
@@ -55,14 +61,15 @@
                 android:layout_height="0dp"/>
 
         <ImageView
+                android:background="?selectableItemBackgroundBorderless"
 
                 android:layout_marginBottom="15dp"
                 android:tint="@android:color/white"
                 android:layout_gravity="center"
                 android:src="@drawable/share_icon"
                 android:id="@+id/shareBtn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"/>
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
 
 
     </LinearLayout>

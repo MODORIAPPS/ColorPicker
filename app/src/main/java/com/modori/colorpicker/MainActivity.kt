@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProviders
@@ -285,18 +286,31 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICTURE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
-                val inputStream: InputStream = contentResolver.openInputStream(data.data)
-                photoBitmap = BitmapFactory.decodeStream(inputStream)
-                //Log.d("ImageUri", imageUri.toString())
-                viewModel.setBitmap(photoBitmap!!)
-                imageview.setImageBitmap(photoBitmap)
-                setRecyclerView(PaletteTool.getColorSet(viewModel.getBitmaps().value!!))
+                try{
+                    val inputStream: InputStream = contentResolver.openInputStream(data.data)
+                    val options = BitmapFactory.Options()
+                    options.inSampleSize = 4
+                    photoBitmap = BitmapFactory.decodeStream(inputStream,null, options)
+
+
+                    viewModel.setBitmap(photoBitmap!!)
+                    imageview.setImageBitmap(photoBitmap)
+                    setRecyclerView(PaletteTool.getColorSet(viewModel.getBitmaps().value!!))
+                }catch (err:Error){
+                    val builder = AlertDialog.Builder(this)
+                    builder.setTitle("이미지가 너무 큽니다.").setMessage("기기가 처리할 수 없을 정도로 이미지가 큽니다.")
+                    val alertDialog = builder.create()
+                    alertDialog.show()
+                }
+
+
 
                 //imageType = false
             }
         }
 
     }
+
 
     private fun sendBitmapBundle() {
         //val bitmap: Bitmap = viewModel.getBitmaps().value!!

@@ -18,6 +18,8 @@
             android:layout_height="match_parent">
 
         <ImageView
+                android:background="?selectableItemBackgroundBorderless"
+
                 android:id="@+id/captureBtn"
                 android:src="@drawable/ic_save_black_24dp"
                 android:tint="@android:color/white"
@@ -25,6 +27,7 @@
                 android:layout_height="40dp"/>
 
         <ImageView
+                android:background="?selectableItemBackgroundBorderless"
 
                 android:id="@+id/copyBtn"
                 android:layout_marginTop="15dp"

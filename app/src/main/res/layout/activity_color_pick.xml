@@ -24,6 +24,8 @@
                 android:layout_height="?attr/actionBarSize">
 
             <ImageView
+                    android:background="?selectableItemBackgroundBorderless"
+
                     android:id="@+id/backBtn"
                     android:src="@drawable/arrow_back_icon"
                     android:tint="@android:color/white"
@@ -41,6 +43,8 @@
                     android:layout_height="wrap_content"/>
 
             <ImageView
+                    android:background="?selectableItemBackgroundBorderless"
+
                     android:layout_alignParentEnd="true"
                     android:layout_centerInParent="true"
                     android:id="@+id/openGallery_p"
