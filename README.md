@@ -2,7 +2,7 @@
 <h4 align="center">Get beautiful Color ideas easily!</h4>
 <p align="center"><a href="https://play.google.com/store/apps/details?id=com.modori.colorpicker"><img src="https://lh3.googleusercontent.com/cjsqrWQKJQp9RFO7-hJ9AfpKzbUb_Y84vXfjlP0iRHBvladwAfXih984olktDhPnFqyZ0nu9A5jvFwOEQPXzv7hr3ce3QVsLN8kQ2Ao=s0"></a></p>
 
-# Get Beautiful color ideas easliy
+# Get Beautiful color ideas easily
 When open the app, get Unsplash photos as default. You can get any photos in gallery and get represent colors.
 
 <div>
