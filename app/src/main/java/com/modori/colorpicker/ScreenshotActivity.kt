@@ -270,7 +270,7 @@ class ScreenshotActivity : AppCompatActivity(), View.OnClickListener {
     private fun copyToClipBoard(imageBitmap: Bitmap) {
         val clipBoard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData: ClipData = ClipData.newUri(contentResolver, "Image", getImageUri(imageBitmap))
-        clipBoard.primaryClip = clipData
+        clipBoard.setPrimaryClip(clipData)
 
         Toast.makeText(this, getString(R.string.Screenshot_copyedToast), Toast.LENGTH_SHORT).show()
     }

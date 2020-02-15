@@ -287,7 +287,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == PICTURE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 try{
-                    val inputStream: InputStream = contentResolver.openInputStream(data.data)
+                    val inputStream: InputStream? = contentResolver.openInputStream(data.data!!)
                     val options = BitmapFactory.Options()
                     options.inSampleSize = 4
                     photoBitmap = BitmapFactory.decodeStream(inputStream,null, options)

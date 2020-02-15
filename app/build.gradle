@@ -4,12 +4,12 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion = 28
+    compileSdkVersion = 29
 
     defaultConfig {
         applicationId "com.modori.colorpicker"
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 2
         versionName "1.1.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -23,10 +23,14 @@ android {
     dataBinding{
         enabled = true
     }
-    kotlin {
-        experimental {
-            coroutines "enable"
-        }
+//    kotlin {
+//        experimental {
+//            coroutines "enable"
+//        }
+//    }
+
+    kotlinOptions{
+        jvmTarget ="1.8"
     }
 
     repositories {
@@ -39,6 +43,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+
     buildToolsVersion = '29'
 
 }
@@ -50,20 +55,20 @@ dependencies {
         transitive = true
     }
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.41"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.50"
     implementation 'com.github.bumptech.glide:glide:4.9.0'
-    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0-alpha02"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation 'io.reactivex.rxjava2:rxjava:2.2.6'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
-    implementation 'androidx.core:core-ktx:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.2.0-alpha02'
+    implementation 'androidx.core:core-ktx:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'androidx.palette:palette:1.0.0'
-    implementation 'com.google.android.material:material:1.1.0-alpha07'
+    implementation 'com.google.android.material:material:1.2.0-alpha04'
 
 
     // Retrofit, Gson

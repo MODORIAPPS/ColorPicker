@@ -69,7 +69,7 @@ class ColorAdapter(private val items: List<Int>, private val context: Context) :
     private fun setClipBoardLink(context: Context, link:String):Boolean{
         val clipboardManager:ClipboardManager = context.getSystemService(Activity.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData:ClipData = ClipData.newPlainText("label", link)
-        clipboardManager.primaryClip = clipData
+        clipboardManager.setPrimaryClip(clipData)
         Toast.makeText(context,link + "를 클립보드에 복사하였습니다.", Toast.LENGTH_LONG).show()
 
         return true
