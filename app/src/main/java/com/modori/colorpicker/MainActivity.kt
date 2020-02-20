@@ -2,7 +2,6 @@ package com.modori.colorpicker
 
 import android.Manifest
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -12,9 +11,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -25,6 +26,9 @@ import com.bumptech.glide.request.target.Target
 import com.crashlytics.android.Crashlytics
 import com.daimajia.androidanimations.library.Techniques
 import com.daimajia.androidanimations.library.YoYo
+import com.faltenreich.skeletonlayout.Skeleton
+import com.faltenreich.skeletonlayout.SkeletonLayout
+import com.faltenreich.skeletonlayout.applySkeleton
 import com.modori.colorpicker.Api.RandomImage
 import com.modori.colorpicker.model.RandomImageModel
 import com.modori.colorpicker.RA.ColorAdapter
@@ -51,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     var photoBitmap: Bitmap? = null
     var colorList: IntArray? = null
     var retrofit: Retrofit? = null
+    lateinit var colorsRvMask:Skeleton
 
     lateinit var imageUri: Uri
     lateinit var colorSet: MutableSet<Int>
@@ -62,13 +67,13 @@ class MainActivity : AppCompatActivity() {
     private val PICTURE_REQUEST_CODE: Int = 123
     private val MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2
     lateinit var viewModel: ActivityModel
-    lateinit var pDialog: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        Fabric.with(this, Crashlytics())
-        pDialog = ProgressDialog(this)
+
+        colorsRvMask = findViewById<SkeletonLayout>(R.id.colorRVMask)
+        colorsRvMask = colorsRV.applySkeleton(R.layout.color_items_vertical, 6)
 
         viewModel = ViewModelProviders.of(this).get(ActivityModel::class.java)
         viewModel.getBitmaps().observe(this, androidx.lifecycle.Observer {
@@ -78,7 +83,8 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        val ReadpermissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val ReadpermissionCheck =
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         if (ReadpermissionCheck == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(
                 this,
@@ -88,29 +94,7 @@ class MainActivity : AppCompatActivity() {
 
         } else {
 
-            if (savedInstanceState != null) {
-//
-//                if(savedInstanceState.getString("photoId") != null){
-//                    val mPhotoId: String = savedInstanceState.getString("photoId")
-//                    val mPhotoUri: Uri = savedInstanceState.getParcelable("photoUri")
-//                    val mPhotoType: Boolean = savedInstanceState.getBoolean("photoType")
-//                    imageType = mPhotoType
-//                    //getPhotoById(mPhotoId)
-//                    imageUri = mPhotoUri
-//                    photoId = mPhotoId
-//                    imageview.setImageURI(mPhotoUri)
-//                    createPaletteAsync(MediaStore.Images.Media.getBitmap(contentResolver, imageUri))
-//
-//                }else{
-//                    getRandomPhoto()
-//                }
-
-
-            } else {
-                getRandomPhoto()
-
-            }
-
+            getRandomPhoto()
 
         }
 
@@ -132,7 +116,10 @@ class MainActivity : AppCompatActivity() {
             getFromGallery.type = "image/*"
             getFromGallery.putExtra(Intent.ACTION_GET_CONTENT, true)
             getFromGallery.type = MediaStore.Images.Media.CONTENT_TYPE
-            startActivityForResult(Intent.createChooser(getFromGallery, "Select Picture"), PICTURE_REQUEST_CODE)
+            startActivityForResult(
+                Intent.createChooser(getFromGallery, "Select Picture"),
+                PICTURE_REQUEST_CODE
+            )
 
         }
 
@@ -195,8 +182,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun getRandomPhoto() {
 
-        setUpDialog()
-        pDialog.show()
+        imageMask.showSkeleton()
+        colorsRvMask.showSkeleton()
 
 
         retrofit = Retrofit.Builder()
@@ -210,10 +197,16 @@ class MainActivity : AppCompatActivity() {
 
         val getPhoto = GlobalScope.launch(Dispatchers.Default) {
             call.enqueue(object : Callback<RandomImageModel> {
-                override fun onResponse(call: Call<RandomImageModel>, response: Response<RandomImageModel>) {
+                override fun onResponse(
+                    call: Call<RandomImageModel>,
+                    response: Response<RandomImageModel>
+                ) {
                     if (response.isSuccessful) {
 
-                        Glide.with(applicationContext).asBitmap().load(response.body()!!.urls!!.regular)
+                        Log.d("이미지 로딩","성공")
+
+                        Glide.with(applicationContext).asBitmap()
+                            .load(response.body()!!.urls!!.regular)
                             .listener(object : RequestListener<Bitmap> {
                                 override fun onLoadFailed(
                                     e: GlideException?,
@@ -236,22 +229,17 @@ class MainActivity : AppCompatActivity() {
                                     setRecyclerView(PaletteTool.getColorSet(photoBitmap!!))
                                     return true
                                 }
-                            }).into(imageview)
+                            }).into(imageView)
 
-                        if (pDialog != null && pDialog.isShowing) {
-                            pDialog.dismiss()
-                        }
-
+                        colorsRvMask.showOriginal()
+                        imageMask.showOriginal()
                     }
                 }
 
                 override fun onFailure(call: Call<RandomImageModel>, t: Throwable) {
                     Log.d("통신 실패 사유", t.message)
-
-                    if (pDialog != null && pDialog.isShowing) {
-                        pDialog.dismiss()
-                    }
-
+                    colorsRvMask.showOriginal()
+                    imageMask.showOriginal()
                 }
 
 
@@ -259,10 +247,6 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-    }
-
-    private fun setUpDialog() {
-        pDialog.setMessage("이미지를 불러오고 있어요.")
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -281,28 +265,31 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    fun getResizedBitmap(data: Uri): Bitmap? {
+        val inputStream: InputStream? = contentResolver.openInputStream(data)
+        val options = BitmapFactory.Options()
+        options.inSampleSize = 4
+        return BitmapFactory.decodeStream(inputStream, null, options)
+    }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICTURE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
-                try{
-                    val inputStream: InputStream? = contentResolver.openInputStream(data.data!!)
-                    val options = BitmapFactory.Options()
-                    options.inSampleSize = 4
-                    photoBitmap = BitmapFactory.decodeStream(inputStream,null, options)
+                try {
 
+                    photoBitmap = getResizedBitmap(data.data!!)
 
                     viewModel.setBitmap(photoBitmap!!)
-                    imageview.setImageBitmap(photoBitmap)
+                    imageView.setImageBitmap(photoBitmap)
                     setRecyclerView(PaletteTool.getColorSet(viewModel.getBitmaps().value!!))
-                }catch (err:Error){
+                } catch (err: Error) {
                     val builder = AlertDialog.Builder(this)
                     builder.setTitle("이미지가 너무 큽니다.").setMessage("기기가 처리할 수 없을 정도로 이미지가 큽니다.")
                     val alertDialog = builder.create()
                     alertDialog.show()
                 }
-
 
 
                 //imageType = false
@@ -322,7 +309,7 @@ class MainActivity : AppCompatActivity() {
         val imageH: Int = (bitmap.height * scale).toInt()
 
         val resize: Bitmap = Bitmap.createScaledBitmap(bitmap, imageW, imageH, true)
-        resize.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+        resize.compress(Bitmap.CompressFormat.JPEG, 80, stream)
         val byteArray = stream.toByteArray()
         val colorArray = colorSet.toIntArray()
 
@@ -407,12 +394,12 @@ class MainActivity : AppCompatActivity() {
         YoYo.with(Techniques.FadeIn)
             .duration(500)
             .repeat(0)
-            .playOn(imageview)
+            .playOn(imageView)
 
         if (bitmap.width > 1000 && bitmap.height > 1000) {
-            Glide.with(this).load(bitmap).override(800, 800).into(imageview)
+            Glide.with(this).load(bitmap).override(800, 800).into(imageView)
         }
-        imageview.setImageBitmap(bitmap)
+        imageView.setImageBitmap(bitmap)
     }
 
     private fun setRecyclerView(set: Set<Int>) {
@@ -434,7 +421,11 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

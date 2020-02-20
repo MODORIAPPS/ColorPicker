@@ -1,104 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:background="#ECECEC"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:weightSum="10"
+        android:background="#ECECEC"
         android:orientation="vertical"
+        android:weightSum="10"
         tools:context=".MainActivity">
 
 
     <RelativeLayout
-            android:background="@color/colorPrimary"
-            android:paddingStart="15dp"
-            android:paddingEnd="15dp"
             android:id="@+id/utilToolBar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize">
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp">
 
         <ImageView
-                android:background="?selectableItemBackgroundBorderless"
+                android:id="@+id/openGallery"
 
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:tint="@android:color/white"
                 android:layout_gravity="center"
+                android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/camera_alt_icon"
-                android:id="@+id/openGallery"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
+                android:tint="@android:color/white" />
 
         <ImageView
-                android:background="?selectableItemBackgroundBorderless"
+                android:id="@+id/refreshBtn"
 
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
                 android:layout_marginStart="15dp"
                 android:layout_toEndOf="@id/openGallery"
-                android:layout_centerVertical="true"
-                android:tint="@android:color/white"
-                android:layout_gravity="center"
+                android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/refresh_icon"
-                android:id="@+id/refreshBtn"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
+                android:tint="@android:color/white" />
 
         <ImageView
-                android:background="?selectableItemBackgroundBorderless"
+                android:id="@+id/shareBtn"
 
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:tint="@android:color/white"
-                android:layout_marginStart="15dp"
                 android:layout_gravity="center"
+                android:layout_marginStart="15dp"
+                android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/share_icon"
-                android:id="@+id/shareBtn"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
+                android:tint="@android:color/white" />
 
         <ImageView
-                android:background="?selectableItemBackgroundBorderless"
-
-                android:visibility="gone"
-                android:layout_toEndOf="@id/refreshBtn"
-                android:layout_centerVertical="true"
-                android:tint="@android:color/white"
-                android:layout_marginStart="15dp"
-                android:layout_gravity="center"
-                android:src="@drawable/colorize_icon"
                 android:id="@+id/colorizeBtn"
                 android:layout_width="40dp"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:layout_marginStart="15dp"
+                android:layout_toEndOf="@id/refreshBtn"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/colorize_icon"
+                android:tint="@android:color/white"
+                android:visibility="gone" />
 
 
     </RelativeLayout>
 
-    <RelativeLayout
-            android:gravity="center"
+    <com.faltenreich.skeletonlayout.SkeletonLayout
+            android:id="@+id/imageMask"
             android:layout_width="match_parent"
-            android:layout_height="220dp">
+            android:layout_height="wrap_content">
 
         <com.github.chrisbanes.photoview.PhotoView
-                android:id="@+id/imageview"
-                android:adjustViewBounds="true"
-                android:scaleType="centerCrop"
+                android:id="@+id/imageView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="220dp"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop" />
+    </com.faltenreich.skeletonlayout.SkeletonLayout>
 
-    </RelativeLayout>
     <!--<RelativeLayout-->
     <!--android:layout_width="match_parent"-->
     <!--android:layout_height="80dp">-->
 
     <!--</RelativeLayout>-->
 
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/colorsRV"
-            tools:listitem="@layout/color_items_vertical"
+    <com.faltenreich.skeletonlayout.SkeletonLayout
+            android:id="@+id/colorRVMask"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
-    </androidx.recyclerview.widget.RecyclerView>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/colorsRV"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:listitem="@layout/color_items_vertical" />
+    </com.faltenreich.skeletonlayout.SkeletonLayout>
+
 
 </LinearLayout>

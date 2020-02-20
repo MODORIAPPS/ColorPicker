@@ -70,6 +70,9 @@ dependencies {
     implementation 'androidx.palette:palette:1.0.0'
     implementation 'com.google.android.material:material:1.2.0-alpha04'
 
+    // Skeleton
+    implementation 'com.faltenreich:skeletonlayout:2.0.1'
+
 
     // Retrofit, Gson
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'
