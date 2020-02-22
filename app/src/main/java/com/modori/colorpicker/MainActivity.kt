@@ -2,11 +2,16 @@ package com.modori.colorpicker
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
@@ -15,7 +20,7 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -23,7 +28,6 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.crashlytics.android.Crashlytics
 import com.daimajia.androidanimations.library.Techniques
 import com.daimajia.androidanimations.library.YoYo
 import com.faltenreich.skeletonlayout.Skeleton
@@ -34,7 +38,6 @@ import com.modori.colorpicker.model.RandomImageModel
 import com.modori.colorpicker.RA.ColorAdapter
 import com.modori.colorpicker.Utils.PaletteTool
 import com.modori.colorpicker.model.ActivityModel
-import io.fabric.sdk.android.Fabric
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -48,14 +51,14 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
 
 
     //var photoId: String = "eee"
     var photoBitmap: Bitmap? = null
     var colorList: IntArray? = null
     var retrofit: Retrofit? = null
-    lateinit var colorsRvMask:Skeleton
+    lateinit var colorsRvMask: Skeleton
 
     lateinit var imageUri: Uri
     lateinit var colorSet: MutableSet<Int>
@@ -63,10 +66,29 @@ class MainActivity : AppCompatActivity() {
 
     //var imageType: Boolean? = null
 
-
     private val PICTURE_REQUEST_CODE: Int = 123
     private val MY_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 2
     lateinit var viewModel: ActivityModel
+
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            R.id.shareBtn -> sendBitmapBundle()
+            R.id.refreshBtn -> getRandomPhoto()
+            R.id.openGallery -> {
+                val getFromGallery = Intent(Intent.ACTION_PICK)
+                getFromGallery.type = "image/*"
+                getFromGallery.putExtra(Intent.ACTION_GET_CONTENT, true)
+                getFromGallery.type = MediaStore.Images.Media.CONTENT_TYPE
+                startActivityForResult(
+                    Intent.createChooser(getFromGallery, "Select Picture"),
+                    PICTURE_REQUEST_CODE
+                )
+            }
+            R.id.colorizeBtn -> startActivity(Intent(this, ColorPickActivity::class.java))
+
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,9 +105,9 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        val ReadpermissionCheck =
+        val readPermissionCheck =
             ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if (ReadpermissionCheck == PackageManager.PERMISSION_DENIED) {
+        if (readPermissionCheck == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
@@ -93,41 +115,33 @@ class MainActivity : AppCompatActivity() {
             )
 
         } else {
-
-            getRandomPhoto()
-
-        }
-
-
-
-        shareBtn.setOnClickListener {
-            //            val intent = Intent(this, ScreenshotActivity::class.java)
-//            startActivity(intent)
-//
-            sendBitmapBundle()
-        }
-        refreshBtn.setOnClickListener {
             getRandomPhoto()
         }
 
-        openGallery.setOnClickListener {
+        shareBtn.setOnClickListener(this)
+        refreshBtn.setOnClickListener(this)
+        openGallery.setOnClickListener(this)
+        colorizeBtn.setOnClickListener(this)
 
-            val getFromGallery = Intent(Intent.ACTION_PICK)
-            getFromGallery.type = "image/*"
-            getFromGallery.putExtra(Intent.ACTION_GET_CONTENT, true)
-            getFromGallery.type = MediaStore.Images.Media.CONTENT_TYPE
-            startActivityForResult(
-                Intent.createChooser(getFromGallery, "Select Picture"),
-                PICTURE_REQUEST_CODE
-            )
 
+    }
+
+    private fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val nw = connectivityManager.activeNetwork ?: return false
+            val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+            return when {
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+                else -> false
+            }
+        } else {
+            return connectivityManager.activeNetwork != null
         }
-
-        colorizeBtn.setOnClickListener {
-            startActivity(Intent(this, ColorPickActivity::class.java))
-        }
-
-
     }
 
 //    private fun getPhotoById(mPhotoId: String) {
@@ -182,12 +196,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun getRandomPhoto() {
 
+        if (!isNetworkAvailable(this)) {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("네트워크 없음").setMessage("이미지를 불러오기 위해 네트워크가 필요합니다.").setPositiveButton(
+                "확인"
+            ) { _, _ -> }
+            val alertDialog = builder.create()
+            alertDialog.show()
+
+            return
+        }
+
         imageMask.showSkeleton()
         colorsRvMask.showSkeleton()
 
 
         retrofit = Retrofit.Builder()
-            .baseUrl("https://api.unsplash.com/")
+            .baseUrl("https://api.unsplash.com")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
@@ -203,7 +228,7 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     if (response.isSuccessful) {
 
-                        Log.d("이미지 로딩","성공")
+                        Log.d("이미지 로딩", "성공")
 
                         Glide.with(applicationContext).asBitmap()
                             .load(response.body()!!.urls!!.regular)

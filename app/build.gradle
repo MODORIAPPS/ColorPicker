@@ -10,8 +10,8 @@ android {
         applicationId "com.modori.colorpicker"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 2
-        versionName "1.1.2"
+        versionCode 3
+        versionName "1.1.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -35,7 +35,6 @@ android {
 
     repositories {
         mavenCentral()
-        maven { url 'https://maven.fabric.io/public' }
     }
 
     compileOptions {
@@ -44,7 +43,7 @@ android {
     }
 
 
-    buildToolsVersion = '29'
+    buildToolsVersion = '29.0.3'
 
 }
 
