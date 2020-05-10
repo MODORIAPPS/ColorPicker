@@ -1,163 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#D5D5D5"
+        android:background="#353535"
         tools:context=".ScreenshotActivity">
 
     <LinearLayout
-            android:id="@+id/toolBar"
-            android:background="@color/colorPrimary"
-            android:padding="15dp"
-            android:orientation="vertical"
-            android:layout_alignParentStart="true"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent">
+            android:id="@+id/screenshot_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingStart="15dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="15dp"
+            android:paddingBottom="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
+                android:id="@+id/backBtn"
+
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:background="?selectableItemBackgroundBorderless"
-
-                android:id="@+id/captureBtn"
-                android:src="@drawable/ic_save_black_24dp"
-                android:tint="@android:color/white"
-                android:layout_width="40dp"
-                android:layout_height="40dp"/>
-
-        <ImageView
-                android:background="?selectableItemBackgroundBorderless"
-
-                android:id="@+id/copyBtn"
-                android:layout_marginTop="15dp"
-                android:src="@drawable/copy_icon"
-                android:tint="@android:color/white"
-                android:layout_width="40dp"
-                android:layout_height="40dp"/>
+                android:src="@drawable/arrow_back_icon"
+                app:tint="@android:color/white" />
 
         <View
-                android:layout_weight="1"
                 android:layout_width="0dp"
-                android:layout_height="0dp"/>
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
         <ImageView
-                android:visibility="gone"
-                android:id="@+id/shareBtn_sc"
-                android:layout_marginTop="15dp"
-                android:src="@drawable/share_icon"
-                android:tint="@android:color/white"
-                android:layout_width="40dp"
-                android:layout_height="40dp"/>
+                android:id="@+id/copyImage"
+                android:layout_width="25dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="15dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/copy_icon" />
 
         <ImageView
-                android:visibility="gone"
-                android:id="@+id/infoBtn"
-                android:layout_marginTop="15dp"
-                android:src="@drawable/info_icon"
-                android:tint="@android:color/white"
-                android:layout_width="40dp"
-                android:layout_height="40dp"/>
+                android:id="@+id/saveImage"
+
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_save_black_24dp" />
 
     </LinearLayout>
 
-    <LinearLayout
-            android:layout_marginEnd="15dp"
-            android:layout_alignParentEnd="true"
-            android:background="@android:color/darker_gray"
-            android:id="@+id/rootView_sc"
-            android:layout_centerInParent="true"
-            android:orientation="vertical"
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="400dp"
-            android:weightSum="5"
-            android:layout_height="400dp">
+            android:layout_height="0dp"
 
-        <RelativeLayout
-                android:layout_weight="4"
+            android:maxWidth="400dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/screenshot_toolbar">
+
+        <ImageView
+                android:id="@+id/imageView_sc"
                 android:layout_width="match_parent"
-                android:layout_height="0dp">
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
 
-            <ImageView
-                    android:scaleType="centerCrop"
-                    android:id="@+id/imageView_sc"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+        <TextView
+                android:id="@+id/colorRGBView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:background="#9F000000"
+                android:text="RGB(0,0,0)"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="normal"
+                app:layout_constraintEnd_toEndOf="@+id/imageView_sc"
+                app:layout_constraintStart_toStartOf="@+id/imageView_sc"
+                app:layout_constraintTop_toTopOf="@+id/imageView_sc" />
 
-            <TextView
-                    android:background="#9F000000"
-                    android:textStyle="normal"
-                    android:textSize="20sp"
-                    android:textColor="@android:color/white"
-                    android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:id="@+id/colorRGBView"
-                    android:text="RGB(12,12,12)"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-            <TextView
-                    android:background="#9F000000"
-                    android:textStyle="bold"
-                    android:textSize="20sp"
-                    android:textColor="@android:color/white"
-                    android:layout_alignParentBottom="true"
-                    android:layout_centerHorizontal="true"
-                    android:id="@+id/colorListView"
-                    android:text="#ffffff"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-        </RelativeLayout>
-
+        <TextView
+                android:id="@+id/colorListView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:background="#9F000000"
+                android:text="#ffffff"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+                app:layout_constraintEnd_toEndOf="@+id/imageView_sc"
+                app:layout_constraintStart_toStartOf="@+id/imageView_sc" />
 
         <LinearLayout
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="0dp">
+                android:id="@+id/linearLayout"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/imageView_sc"
+                app:layout_constraintStart_toStartOf="@+id/imageView_sc">
 
             <View
                     android:id="@+id/view1"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
             <View
                     android:id="@+id/view2"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
             <View
                     android:id="@+id/view3"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
             <View
                     android:id="@+id/view4"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
             <View
                     android:id="@+id/view5"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
             <View
                     android:id="@+id/view6"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
 
             <View
                     android:id="@+id/view7"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
         </LinearLayout>
-    </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

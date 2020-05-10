@@ -1,11 +1,7 @@
-package com.modori.colorpicker.Utils
+package com.modori.colorpicker.utils
 
 import android.graphics.Bitmap
-import android.os.Environment
 import android.view.View
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
 
 class Screenshot {
 

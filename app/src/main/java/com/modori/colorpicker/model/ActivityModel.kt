@@ -7,8 +7,9 @@ import androidx.lifecycle.ViewModel
 
 class ActivityModel : ViewModel() {
 
-
+    var photoId = MutableLiveData<String>()
     private val _bitmapStore = MutableLiveData<Bitmap>()
+    private val _colorList = MutableLiveData<List<String>>()
 
 
     fun setBitmap(bitmap: Bitmap) {

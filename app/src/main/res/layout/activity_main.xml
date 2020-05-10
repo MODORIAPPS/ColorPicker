@@ -5,7 +5,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#ECECEC"
+        android:background="#353535"
         android:orientation="vertical"
         android:weightSum="10"
         tools:context=".MainActivity">
@@ -29,7 +29,7 @@
                 android:layout_gravity="center"
                 android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/camera_alt_icon"
-                android:tint="@android:color/white" />
+                app:tint="@android:color/white" />
 
         <ImageView
                 android:id="@+id/refreshBtn"
@@ -42,7 +42,7 @@
                 android:layout_toEndOf="@id/openGallery"
                 android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/refresh_icon"
-                android:tint="@android:color/white" />
+                app:tint="@android:color/white" />
 
         <ImageView
                 android:id="@+id/shareBtn"
@@ -55,7 +55,7 @@
                 android:layout_marginStart="15dp"
                 android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/share_icon"
-                android:tint="@android:color/white" />
+                app:tint="@android:color/white" />
 
         <ImageView
                 android:id="@+id/colorizeBtn"
@@ -67,7 +67,7 @@
                 android:layout_toEndOf="@id/refreshBtn"
                 android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/colorize_icon"
-                android:tint="@android:color/white"
+                app:tint="@android:color/white"
                 android:visibility="gone" />
 
 

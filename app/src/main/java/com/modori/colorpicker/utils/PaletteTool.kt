@@ -1,13 +1,7 @@
-package com.modori.colorpicker.Utils
+package com.modori.colorpicker.utils
 
 import android.graphics.Bitmap
-import android.os.AsyncTask
-import androidx.core.graphics.scale
 import androidx.palette.graphics.Palette
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import java.lang.Exception
 
 class PaletteTool {
 

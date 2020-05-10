@@ -3,7 +3,6 @@ package com.modori.colorpicker
 import android.Manifest
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -20,7 +19,6 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -33,10 +31,10 @@ import com.daimajia.androidanimations.library.YoYo
 import com.faltenreich.skeletonlayout.Skeleton
 import com.faltenreich.skeletonlayout.SkeletonLayout
 import com.faltenreich.skeletonlayout.applySkeleton
-import com.modori.colorpicker.Api.RandomImage
+import com.modori.colorpicker.api.RandomImage
 import com.modori.colorpicker.model.RandomImageModel
-import com.modori.colorpicker.RA.ColorAdapter
-import com.modori.colorpicker.Utils.PaletteTool
+import com.modori.colorpicker.adapter.ColorAdapter
+import com.modori.colorpicker.utils.PaletteTool
 import com.modori.colorpicker.model.ActivityModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +56,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     var photoBitmap: Bitmap? = null
     var colorList: IntArray? = null
     var retrofit: Retrofit? = null
+    var photoId: String? = null
     lateinit var colorsRvMask: Skeleton
 
     lateinit var imageUri: Uri
@@ -72,7 +71,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onClick(v: View?) {
         when (v?.id) {
-            R.id.shareBtn -> sendBitmapBundle()
+            R.id.shareBtn -> {
+                if (photoBitmap != null) {
+                    sendBitmapBundle()
+
+                }
+            }
             R.id.refreshBtn -> getRandomPhoto()
             R.id.openGallery -> {
                 val getFromGallery = Intent(Intent.ACTION_PICK)
@@ -98,10 +102,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         colorsRvMask = colorsRV.applySkeleton(R.layout.color_items_vertical, 6)
 
         viewModel = ViewModelProviders.of(this).get(ActivityModel::class.java)
+
+        if (viewModel.getBitmaps().value != null) {
+            photoBitmap = viewModel.getBitmaps().value!!
+        }
+
+        photoId = viewModel.photoId.value
+
         viewModel.getBitmaps().observe(this, androidx.lifecycle.Observer {
             if (viewModel.getBitmaps().value != null) {
                 setRecyclerView(PaletteTool.getColorSet(viewModel.getBitmaps().value!!))
                 setImageView(viewModel.getBitmaps().value!!)
+            } else {
+                getRandomPhoto()
             }
         })
 
@@ -115,7 +128,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             )
 
         } else {
-            getRandomPhoto()
+            if (photoBitmap == null) {
+                getRandomPhoto()
+            }
         }
 
         shareBtn.setOnClickListener(this)
@@ -196,6 +211,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun getRandomPhoto() {
 
+        // network check
         if (!isNetworkAvailable(this)) {
             val builder = AlertDialog.Builder(this)
             builder.setTitle("네트워크 없음").setMessage("이미지를 불러오기 위해 네트워크가 필요합니다.").setPositiveButton(
@@ -207,10 +223,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             return
         }
 
+//        // Fade Animation
+//        YoYo.with(Techniques.FadeOut)
+//            .duration(500)
+//            .repeat(0)
+//            .playOn(colorsRV)
+//
+//        YoYo.with(Techniques.FadeOut)
+//            .duration(500)
+//            .repeat(0)
+//            .playOn(imageView)
+
+
+        // skeleton
         imageMask.showSkeleton()
         colorsRvMask.showSkeleton()
 
 
+        // api call
         retrofit = Retrofit.Builder()
             .baseUrl("https://api.unsplash.com")
             .addConverterFactory(GsonConverterFactory.create())
@@ -220,7 +250,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val call = service.getRandomPhoto()
         println("새 사진을 불러옴")
 
-        val getPhoto = GlobalScope.launch(Dispatchers.Default) {
+        GlobalScope.launch(Dispatchers.Default) {
             call.enqueue(object : Callback<RandomImageModel> {
                 override fun onResponse(
                     call: Call<RandomImageModel>,
@@ -233,6 +263,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         Glide.with(applicationContext).asBitmap()
                             .load(response.body()!!.urls!!.regular)
                             .listener(object : RequestListener<Bitmap> {
+
                                 override fun onLoadFailed(
                                     e: GlideException?,
                                     model: Any?,
@@ -249,15 +280,24 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                                     dataSource: DataSource?,
                                     isFirstResource: Boolean
                                 ): Boolean {
+
+                                    colorsRvMask.showOriginal()
+                                    imageMask.showOriginal()
+
+                                    Log.d("MainActivity", "OnResourceReady() ")
+
                                     photoBitmap = resource
+
                                     viewModel.setBitmap(photoBitmap!!)
                                     setRecyclerView(PaletteTool.getColorSet(photoBitmap!!))
+
                                     return true
                                 }
                             }).into(imageView)
 
-                        colorsRvMask.showOriginal()
-                        imageMask.showOriginal()
+                        photoId = response.body()!!.id
+
+
                     }
                 }
 
@@ -276,16 +316,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        //Log.d("photoId", photoId)
-
 
         if (photoBitmap != null) {
-            //outState.putString("photoId", photoId)
             viewModel.setBitmap(photoBitmap!!)
-            //imageUri = getImageUri(this, photoBitmap!!)
-            //outState.putParcelable("photoUri", imageUri)
-            //outState.putBoolean("photoType", imageType!!)
-
+            viewModel.photoId.value = photoId
         }
 
     }
@@ -303,7 +337,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         if (requestCode == PICTURE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
                 try {
-
                     photoBitmap = getResizedBitmap(data.data!!)
 
                     viewModel.setBitmap(photoBitmap!!)
@@ -316,8 +349,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     alertDialog.show()
                 }
 
-
-                //imageType = false
             }
         }
 
@@ -339,12 +370,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val colorArray = colorSet.toIntArray()
 
         val intent = Intent(this, ScreenshotActivity::class.java)
+        intent.putExtra("photoId", photoId)
         intent.putExtra("image", byteArray)
         intent.putExtra("color", colorArray)
 
         startActivity(intent)
 
     }
+
+
 
 //    private fun getResizedBitmap(uri: Uri): Bitmap {
 //        val options: android.graphics.BitmapFactory.Options = android.graphics.BitmapFactory.Options()
@@ -388,38 +422,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 //        return Uri.parse(path)
 //    }
 
-    private fun getResizeRate(outWidth: Int, outHeight: Int, wantWidth: Int, wantHeight: Int): Int {
-        var size: Int = 1
-
-        var mOutWidth = outWidth
-        var mOutHeight = outHeight
-
-        Log.d("받은 사진 가로", mOutWidth.toString())
-        Log.d("받은 사진 세로", mOutHeight.toString())
-
-        return if (outWidth * outHeight < wantWidth * wantHeight) {
-            while (mOutWidth < wantWidth || mOutHeight < wantHeight) {
-                mOutWidth /= 2
-                mOutHeight /= 2
-
-                size *= 2
-
-            }
-
-            size
-        } else {
-            1
-
-        }
-
-
-    }
-
     private fun setImageView(bitmap: Bitmap) {
-        YoYo.with(Techniques.FadeIn)
-            .duration(500)
-            .repeat(0)
-            .playOn(imageView)
+//        YoYo.with(Techniques.FadeIn)
+//            .duration(500)
+//            .repeat(0)
+//            .playOn(imageView)
 
         if (bitmap.width > 1000 && bitmap.height > 1000) {
             Glide.with(this).load(bitmap).override(800, 800).into(imageView)
@@ -437,6 +444,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         utilToolBar.setBackgroundColor(colorList!![0])
 
+        // Fade Animation
         YoYo.with(Techniques.FadeIn)
             .duration(500)
             .repeat(0)
